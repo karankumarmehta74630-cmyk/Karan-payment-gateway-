@@ -9,25 +9,21 @@
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Poppins}
-
 body{
 background:linear-gradient(135deg,#0f172a,#1e3a8a);
 height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
-color:#fff;
 }
-
 .card{
 width:380px;
 background:#fff;
-color:#000;
 padding:25px;
 border-radius:15px;
 box-shadow:0 25px 50px rgba(0,0,0,0.3);
+animation:fade .5s ease;
 }
-
 .header{
 background:#1e40af;
 color:#fff;
@@ -37,7 +33,6 @@ text-align:center;
 font-weight:600;
 margin-bottom:20px;
 }
-
 input{
 width:100%;
 padding:10px;
@@ -45,7 +40,6 @@ margin-top:10px;
 border:1px solid #ccc;
 border-radius:6px;
 }
-
 button{
 width:100%;
 padding:10px;
@@ -56,17 +50,19 @@ background:#1e40af;
 color:#fff;
 font-weight:600;
 cursor:pointer;
+transition:.3s;
 }
-
-.google-btn{
-background:#ea4335;
+button:hover{transform:scale(1.03)}
+.google-btn{background:#ea4335}
+@keyframes fade{
+from{opacity:0;transform:scale(.95)}
+to{opacity:1;transform:scale(1)}
 }
 </style>
 </head>
 <body>
 
 <div class="card">
-
 <div class="header">Karan Payment Gateway</div>
 
 <input type="email" id="email" placeholder="Enter Email">
@@ -75,13 +71,12 @@ background:#ea4335;
 <button onclick="login()">Login</button>
 <button onclick="register()">Create Account</button>
 <button class="google-btn" onclick="googleLogin()">Login with Google</button>
-
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBWfnQ9KFDWA5V9_VfqQdWd-vL-psdcqTA",
@@ -93,22 +88,22 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-window.login = function(){
-let email=document.getElementById("email").value;
-let pass=document.getElementById("password").value;
-
-signInWithEmailAndPassword(auth,email,pass)
-.then(()=>{
+onAuthStateChanged(auth,user=>{
+if(user){
 window.location.href="index.html";
-})
+}
+});
+
+window.login = function(){
+let email=email.value;
+let pass=password.value;
+signInWithEmailAndPassword(auth,email,pass)
+.then(()=>window.location.href="index.html")
 .catch(err=>alert(err.message));
 }
 
 window.register = function(){
-let email=document.getElementById("email").value;
-let pass=document.getElementById("password").value;
-
-createUserWithEmailAndPassword(auth,email,pass)
+createUserWithEmailAndPassword(auth,email.value,password.value)
 .then(()=>alert("Account Created"))
 .catch(err=>alert(err.message));
 }
