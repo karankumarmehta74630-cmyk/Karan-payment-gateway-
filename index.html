@@ -226,7 +226,7 @@ orderId="ORD"+Date.now();
 document.getElementById("orderText").innerText="Order ID: "+orderId;
 document.getElementById("amountText").innerText="Amount to Pay: ₹"+currentAmount;
 
-let merchantUPI="merchant@upi"; // replace with official business UPI
+let merchantUPI="7463011305-14@ybl"; // replace with official business UPI
 
 upiLink=`upi://pay?pa=${merchantUPI}&pn=Karan&am=${currentAmount}&cu=INR&tn=${encodeURIComponent("Order "+orderId)}`;
 
