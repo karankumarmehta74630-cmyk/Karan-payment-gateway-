@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Karan Payment - Login</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins}
+
+body{
+background:linear-gradient(135deg,#0f172a,#1e3a8a);
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+color:#fff;
+}
+
+.card{
+width:380px;
+background:#fff;
+color:#000;
+padding:25px;
+border-radius:15px;
+box-shadow:0 25px 50px rgba(0,0,0,0.3);
+}
+
+.header{
+background:#1e40af;
+color:#fff;
+padding:12px;
+border-radius:10px;
+text-align:center;
+font-weight:600;
+margin-bottom:20px;
+}
+
+input{
+width:100%;
+padding:10px;
+margin-top:10px;
+border:1px solid #ccc;
+border-radius:6px;
+}
+
+button{
+width:100%;
+padding:10px;
+margin-top:12px;
+border:none;
+border-radius:6px;
+background:#1e40af;
+color:#fff;
+font-weight:600;
+cursor:pointer;
+}
+
+.google-btn{
+background:#ea4335;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+
+<div class="header">Karan Payment Gateway</div>
+
+<input type="email" id="email" placeholder="Enter Email">
+<input type="password" id="password" placeholder="Enter Password">
+
+<button onclick="login()">Login</button>
+<button onclick="register()">Create Account</button>
+<button class="google-btn" onclick="googleLogin()">Login with Google</button>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBWfnQ9KFDWA5V9_VfqQdWd-vL-psdcqTA",
+  authDomain: "karanchatapp-e0b1d.firebaseapp.com",
+  projectId: "karanchatapp-e0b1d",
+  appId: "1:992252113506:web:c55091651550918a43173b"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+window.login = function(){
+let email=document.getElementById("email").value;
+let pass=document.getElementById("password").value;
+
+signInWithEmailAndPassword(auth,email,pass)
+.then(()=>{
+window.location.href="index.html";
+})
+.catch(err=>alert(err.message));
+}
+
+window.register = function(){
+let email=document.getElementById("email").value;
+let pass=document.getElementById("password").value;
+
+createUserWithEmailAndPassword(auth,email,pass)
+.then(()=>alert("Account Created"))
+.catch(err=>alert(err.message));
+}
+
+window.googleLogin = function(){
+const provider=new GoogleAuthProvider();
+signInWithPopup(auth,provider)
+.then(()=>window.location.href="index.html")
+.catch(err=>alert(err.message));
+}
+
+</script>
+
+</body>
+</html>
