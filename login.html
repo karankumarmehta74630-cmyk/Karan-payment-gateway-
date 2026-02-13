@@ -3,80 +3,111 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Karan Payment - Login</title>
+<title>Karan Payment - Secure Login</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Poppins}
+
 body{
-background:linear-gradient(135deg,#0f172a,#1e3a8a);
 height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
+background:linear-gradient(-45deg,#0f172a,#1e3a8a,#9333ea,#0f172a);
+background-size:400% 400%;
+animation:bg 12s ease infinite;
 }
+
+@keyframes bg{
+0%{background-position:0% 50%}
+50%{background-position:100% 50%}
+100%{background-position:0% 50%}
+}
+
 .card{
 width:380px;
-background:#fff;
-padding:25px;
-border-radius:15px;
-box-shadow:0 25px 50px rgba(0,0,0,0.3);
-animation:fade .5s ease;
-}
-.header{
-background:#1e40af;
+background:rgba(255,255,255,0.1);
+backdrop-filter:blur(15px);
+padding:30px;
+border-radius:20px;
+box-shadow:0 20px 50px rgba(0,0,0,0.4);
 color:#fff;
-padding:12px;
-border-radius:10px;
+animation:fade .6s ease;
+}
+
+@keyframes fade{
+from{opacity:0;transform:translateY(20px)}
+to{opacity:1;transform:translateY(0)}
+}
+
+.title{
 text-align:center;
+font-size:20px;
 font-weight:600;
 margin-bottom:20px;
 }
+
 input{
 width:100%;
-padding:10px;
-margin-top:10px;
-border:1px solid #ccc;
-border-radius:6px;
-}
-button{
-width:100%;
-padding:10px;
+padding:12px;
 margin-top:12px;
 border:none;
-border-radius:6px;
-background:#1e40af;
-color:#fff;
-font-weight:600;
+border-radius:10px;
+outline:none;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:15px;
+border:none;
+border-radius:10px;
 cursor:pointer;
+font-weight:600;
 transition:.3s;
 }
-button:hover{transform:scale(1.03)}
-.google-btn{background:#ea4335}
-@keyframes fade{
-from{opacity:0;transform:scale(.95)}
-to{opacity:1;transform:scale(1)}
+
+.login-btn{background:#1e40af;color:#fff}
+.login-btn:hover{background:#2563eb}
+
+.google-btn{background:#ea4335;color:#fff}
+.google-btn:hover{background:#f87171}
+
+.link{
+margin-top:12px;
+text-align:center;
+font-size:13px;
+cursor:pointer;
+color:#fff;
+opacity:.8;
 }
+
+.link:hover{opacity:1}
 </style>
 </head>
 <body>
 
 <div class="card">
-<div class="header">Karan Payment Gateway</div>
+
+<div class="title">Karan Payment Gateway</div>
 
 <input type="email" id="email" placeholder="Enter Email">
 <input type="password" id="password" placeholder="Enter Password">
 
-<button onclick="login()">Login</button>
-<button onclick="register()">Create Account</button>
+<button class="login-btn" onclick="login()">Login</button>
+<button class="login-btn" onclick="register()">Create Account</button>
 <button class="google-btn" onclick="googleLogin()">Login with Google</button>
+
+<div class="link" onclick="forgotPassword()">Forgot Password?</div>
+
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBWfnQ9KFDWA5V9_VfqQdWd-vL-psdcqTA",
@@ -94,24 +125,32 @@ window.location.href="index.html";
 }
 });
 
-window.login = function(){
-let email=email.value;
-let pass=password.value;
-signInWithEmailAndPassword(auth,email,pass)
+window.login=function(){
+signInWithEmailAndPassword(auth,email.value,password.value)
 .then(()=>window.location.href="index.html")
 .catch(err=>alert(err.message));
 }
 
-window.register = function(){
+window.register=function(){
 createUserWithEmailAndPassword(auth,email.value,password.value)
-.then(()=>alert("Account Created"))
+.then(()=>alert("Account Created Successfully"))
 .catch(err=>alert(err.message));
 }
 
-window.googleLogin = function(){
+window.googleLogin=function(){
 const provider=new GoogleAuthProvider();
 signInWithPopup(auth,provider)
 .then(()=>window.location.href="index.html")
+.catch(err=>alert(err.message));
+}
+
+window.forgotPassword=function(){
+if(!email.value){
+alert("Enter your email first");
+return;
+}
+sendPasswordResetEmail(auth,email.value)
+.then(()=>alert("Password reset email sent"))
 .catch(err=>alert(err.message));
 }
 
