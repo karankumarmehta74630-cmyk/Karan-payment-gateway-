@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>White Digital Board - School & Tuition</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{
+ margin:0;
+ background:#f4f6f8;
+ font-family:'Segoe UI',Arial;
+ overflow:hidden;
+}
+#board{
+ width:100vw;
+ height:100vh;
+ background:white;
+ box-shadow:0 0 30px rgba(0,0,0,0.15);
+ display:flex;
+ flex-direction:column;
+}
+header{
+ text-align:center;
+ padding:15px;
+ font-size:34px;
+ font-weight:600;
+ color:#222;
+ border-bottom:2px solid #ddd;
+}
+#clock{
+ text-align:center;
+ font-size:18px;
+ color:#555;
+ padding-bottom:10px;
+}
+section{
+ flex:1;
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:20px;
+ padding:20px;
+}
+.box{
+ background:#ffffff;
+ border-radius:10px;
+ padding:18px;
+ box-shadow:0 8px 20px rgba(0,0,0,0.08);
+ font-size:20px;
+ color:#333;
+}
+.box h3{
+ margin:0 0 10px;
+ color:#111;
+}
+#marquee{
+ background:#111;
+ color:#fff;
+ padding:14px;
+ font-size:26px;
+ overflow:hidden;
+}
+#scroll{
+ white-space:nowrap;
+ display:inline-block;
+ animation:scroll 14s linear infinite;
+}
+@keyframes scroll{
+ from{transform:translateX(100%);}
+ to{transform:translateX(-100%);}
+}
+
+/* ADMIN */
+#adminBtn{
+ position:fixed;
+ top:10px;
+ right:10px;
+ background:#222;
+ color:#fff;
+ border:none;
+ padding:10px 14px;
+ border-radius:6px;
+ cursor:pointer;
+}
+#admin{
+ display:none;
+ position:fixed;
+ inset:0;
+ background:#ffffff;
+ padding:25px;
+}
+input,textarea,select{
+ width:100%;
+ padding:10px;
+ margin:8px 0;
+ font-size:16px;
+}
+button{
+ padding:10px 15px;
+ margin-top:8px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="board">
+<header>SCHOOL & TUITION WHITE DIGITAL BOARD</header>
+<div id="clock"></div>
+
+<section>
+<div class="box">
+<h3>🌞 Thought of the Day</h3>
+<div id="thought">Success comes from discipline and hard work.</div>
+</div>
+
+<div class="box">
+<h3>📢 Today Notice</h3>
+<div id="notice">Classes will start on time.</div>
+</div>
+
+<div class="box">
+<h3>📚 Timetable</h3>
+<div id="timeTable">
+School: 9:00 AM – 2:00 PM<br>
+Tuition: 4:00 PM – 7:00 PM
+</div>
+</div>
+
+<div class="box">
+<h3>📝 Exam / Test</h3>
+<div id="exam">Unit test on Saturday</div>
+</div>
+</section>
+
+<div id="marquee">
+ <div id="scroll">Welcome to Smart White Digital Board – Stay Updated</div>
+</div>
+</div>
+
+<button id="adminBtn">⚙️ ADMIN</button>
+
+<!-- ADMIN PANEL -->
+<div id="admin">
+<h2>Admin Panel</h2>
+
+<div id="login">
+<input type="password" id="pass" placeholder="Enter Password">
+<button onclick="login()">Login</button>
+</div>
+
+<div id="panel" style="display:none;">
+<textarea id="thoughtIn" placeholder="Thought of the Day"></textarea>
+<textarea id="noticeIn" placeholder="Today Notice"></textarea>
+<textarea id="tableIn" placeholder="Timetable"></textarea>
+<textarea id="examIn" placeholder="Exam Info"></textarea>
+<textarea id="scrollIn" placeholder="Scrolling Message"></textarea>
+
+<label>Scroll Speed</label>
+<select id="speed">
+<option value="8">Fast</option>
+<option value="14">Normal</option>
+<option value="22">Slow</option>
+</select>
+
+<button onclick="apply()">Apply</button>
+<button onclick="closeAdmin()">Close</button>
+</div>
+</div>
+
+<script>
+function clock(){
+ let d=new Date();
+ clock.innerHTML=d.toDateString()+" | "+d.toLocaleTimeString();
+}
+setInterval(clock,1000);clock();
+
+adminBtn.onclick=()=>admin.style.display="block";
+
+function login(){
+ if(pass.value==="1212"){
+  login.style.display="none";
+  panel.style.display="block";
+ }else alert("Wrong Password");
+}
+
+function apply(){
+ thought.innerHTML=thoughtIn.value;
+ notice.innerHTML=noticeIn.value;
+ timeTable.innerHTML=tableIn.value;
+ exam.innerHTML=examIn.value;
+ scroll.innerHTML=scrollIn.value;
+ scroll.style.animationDuration=speed.value+"s";
+
+ localStorage.setItem("whiteBoard",JSON.stringify({
+  t:thoughtIn.value,
+  n:noticeIn.value,
+  tb:tableIn.value,
+  e:examIn.value,
+  s:scrollIn.value,
+  sp:speed.value
+ }));
+}
+
+function closeAdmin(){admin.style.display="none";}
+
+let d=JSON.parse(localStorage.getItem("whiteBoard")||"{}");
+if(d.t)thought.innerHTML=d.t;
+if(d.n)notice.innerHTML=d.n;
+if(d.tb)timeTable.innerHTML=d.tb;
+if(d.e)exam.innerHTML=d.e;
+if(d.s)scroll.innerHTML=d.s;
+if(d.sp)scroll.style.animationDuration=d.sp+"s";
+</script>
+
+</body>
+</html>
