@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Karan Payment - Secure Login</title>
+<title>Karan Payment Gateway - Secure Login</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -18,6 +18,7 @@ align-items:center;
 background:linear-gradient(-45deg,#0f172a,#1e3a8a,#9333ea,#0f172a);
 background-size:400% 400%;
 animation:bg 12s ease infinite;
+color:#fff;
 }
 
 @keyframes bg{
@@ -27,14 +28,13 @@ animation:bg 12s ease infinite;
 }
 
 .card{
-width:380px;
+width:400px;
 background:rgba(255,255,255,0.1);
-backdrop-filter:blur(15px);
+backdrop-filter:blur(20px);
 padding:30px;
 border-radius:20px;
-box-shadow:0 20px 50px rgba(0,0,0,0.4);
-color:#fff;
-animation:fade .6s ease;
+box-shadow:0 25px 50px rgba(0,0,0,0.4);
+animation:fade .5s ease;
 }
 
 @keyframes fade{
@@ -44,7 +44,7 @@ to{opacity:1;transform:translateY(0)}
 
 .title{
 text-align:center;
-font-size:20px;
+font-size:22px;
 font-weight:600;
 margin-bottom:20px;
 }
@@ -64,27 +64,86 @@ padding:12px;
 margin-top:15px;
 border:none;
 border-radius:10px;
-cursor:pointer;
 font-weight:600;
+cursor:pointer;
 transition:.3s;
 }
 
-.login-btn{background:#1e40af;color:#fff}
-.login-btn:hover{background:#2563eb}
+.login-btn{
+background:#2563eb;
+color:#fff;
+}
 
-.google-btn{background:#ea4335;color:#fff}
-.google-btn:hover{background:#f87171}
+.login-btn:hover{background:#3b82f6}
+
+.google-btn{
+background:#ea4335;
+color:#fff;
+position:relative;
+overflow:hidden;
+}
+
+.google-btn.loading{
+opacity:.7;
+pointer-events:none;
+}
+
+.spinner{
+width:18px;
+height:18px;
+border:3px solid rgba(255,255,255,0.4);
+border-top:3px solid #fff;
+border-radius:50%;
+animation:spin 1s linear infinite;
+margin:auto;
+}
+
+@keyframes spin{
+100%{transform:rotate(360deg)}
+}
 
 .link{
 margin-top:12px;
-text-align:center;
 font-size:13px;
+text-align:center;
 cursor:pointer;
-color:#fff;
 opacity:.8;
 }
 
 .link:hover{opacity:1}
+
+.terms{
+font-size:12px;
+margin-top:10px;
+display:flex;
+align-items:center;
+gap:5px;
+}
+
+.modal{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,0.6);
+justify-content:center;
+align-items:center;
+}
+
+.modal-content{
+background:#fff;
+color:#000;
+padding:20px;
+border-radius:15px;
+max-width:400px;
+max-height:70vh;
+overflow:auto;
+}
+
+.close{
+float:right;
+cursor:pointer;
+font-weight:600;
+}
 </style>
 </head>
 <body>
@@ -97,11 +156,39 @@ opacity:.8;
 <input type="password" id="password" placeholder="Enter Password">
 
 <button class="login-btn" onclick="login()">Login</button>
-<button class="login-btn" onclick="register()">Create Account</button>
-<button class="google-btn" onclick="googleLogin()">Login with Google</button>
 
+<button class="google-btn" id="googleBtn" onclick="googleLogin()">
+Login with Google
+</button>
+
+<div class="terms">
+<input type="checkbox" id="agree">
+<label>I agree to <span onclick="openTerms()" style="text-decoration:underline;cursor:pointer">Terms & Conditions</span></label>
+</div>
+
+<div class="link" onclick="register()">Create Account</div>
 <div class="link" onclick="forgotPassword()">Forgot Password?</div>
 
+</div>
+
+<!-- Terms Modal -->
+<div class="modal" id="termsModal">
+<div class="modal-content">
+<span class="close" onclick="closeTerms()">✖</span>
+<h3>Terms & Conditions</h3>
+<p>
+Welcome to Karan Payment Gateway. By accessing this platform,
+you agree to use it responsibly and legally. This system is
+for demonstration and development purposes only.
+</p>
+<p>
+Users must not misuse payment links, QR codes, or attempt
+unauthorized transactions.
+</p>
+<p>
+We are not responsible for third-party payment app behavior.
+</p>
+</div>
 </div>
 
 <script type="module">
@@ -126,32 +213,47 @@ window.location.href="index.html";
 });
 
 window.login=function(){
+if(!agree.checked){alert("Accept Terms & Conditions");return;}
 signInWithEmailAndPassword(auth,email.value,password.value)
 .then(()=>window.location.href="index.html")
 .catch(err=>alert(err.message));
 }
 
 window.register=function(){
+if(!agree.checked){alert("Accept Terms & Conditions");return;}
 createUserWithEmailAndPassword(auth,email.value,password.value)
-.then(()=>alert("Account Created Successfully"))
+.then(()=>alert("Account Created"))
 .catch(err=>alert(err.message));
 }
 
 window.googleLogin=function(){
+if(!agree.checked){alert("Accept Terms & Conditions");return;}
+let btn=document.getElementById("googleBtn");
+btn.classList.add("loading");
+btn.innerHTML='<div class="spinner"></div>';
 const provider=new GoogleAuthProvider();
 signInWithPopup(auth,provider)
 .then(()=>window.location.href="index.html")
-.catch(err=>alert(err.message));
+.catch(err=>alert(err.message))
+.finally(()=>{
+btn.classList.remove("loading");
+btn.innerHTML="Login with Google";
+});
 }
 
 window.forgotPassword=function(){
-if(!email.value){
-alert("Enter your email first");
-return;
-}
+if(!email.value){alert("Enter Email");return;}
 sendPasswordResetEmail(auth,email.value)
-.then(()=>alert("Password reset email sent"))
+.then(()=>alert("Password Reset Email Sent"))
 .catch(err=>alert(err.message));
+}
+
+window.openTerms=function(){
+termsModal.style.display="flex";
+}
+
+window.closeTerms=function(){
+termsModal.style.display="none";
 }
 
 </script>
