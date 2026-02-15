@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In - Karan Payment</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Roboto}
+
+body{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:#f2f2f2;
+animation:fadeBody .5s ease;
+}
+
+@keyframes fadeBody{
+from{opacity:0}
+to{opacity:1}
+}
+
+.card{
+width:380px;
+background:#fff;
+padding:35px;
+border-radius:10px;
+box-shadow:0 8px 25px rgba(0,0,0,0.1);
+text-align:center;
+animation:fadeCard .5s ease;
+}
+
+@keyframes fadeCard{
+from{transform:translateY(15px);opacity:0}
+to{transform:translateY(0);opacity:1}
+}
+
+.logo{
+width:60px;
+height:60px;
+margin:auto;
+border-radius:50%;
+background:radial-gradient(circle,#4a90e2,#2563eb);
+display:flex;
+align-items:center;
+justify-content:center;
+color:#fff;
+font-weight:700;
+font-size:20px;
+margin-bottom:15px;
+}
+
+h2{
+font-weight:500;
+margin-bottom:5px;
+}
+
+.subtitle{
+font-size:13px;
+color:#777;
+margin-bottom:25px;
+}
+
+.input-group{
+text-align:left;
+margin-bottom:20px;
+}
+
+.input-group input{
+width:100%;
+border:none;
+border-bottom:1px solid #ccc;
+padding:8px 0;
+outline:none;
+transition:.3s;
+}
+
+.input-group input:focus{
+border-bottom:2px solid #2563eb;
+}
+
+.row{
+display:flex;
+justify-content:space-between;
+align-items:center;
+font-size:13px;
+margin-bottom:20px;
+}
+
+button{
+width:100%;
+padding:10px;
+border:none;
+border-radius:4px;
+cursor:pointer;
+font-weight:500;
+transition:.3s;
+}
+
+.sign-btn{
+background:#2563eb;
+color:#fff;
+margin-bottom:15px;
+}
+
+.sign-btn:hover{
+background:#1e40af;
+}
+
+.divider{
+display:flex;
+align-items:center;
+margin:20px 0;
+font-size:13px;
+color:#777;
+}
+
+.divider::before,
+.divider::after{
+content:"";
+flex:1;
+height:1px;
+background:#ddd;
+margin:0 10px;
+}
+
+.social-btn{
+background:#f5f5f5;
+color:#444;
+margin-bottom:10px;
+border:1px solid #ddd;
+}
+
+.social-btn:hover{
+background:#eaeaea;
+}
+
+.footer{
+margin-top:15px;
+font-size:13px;
+}
+
+.footer span{
+color:#2563eb;
+cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+
+<div class="logo">KP</div>
+
+<h2>Sign in</h2>
+<div class="subtitle">to continue to your account</div>
+
+<div class="input-group">
+<input type="email" id="email" placeholder="Email">
+</div>
+
+<div class="input-group">
+<input type="password" id="password" placeholder="Password">
+</div>
+
+<div class="row">
+<label><input type="checkbox"> Keep me signed in</label>
+<span style="color:#2563eb;cursor:pointer" onclick="forgotPassword()">Forgot Password?</span>
+</div>
+
+<button class="sign-btn" onclick="login()">SIGN IN</button>
+
+<div class="divider">or</div>
+
+<button class="social-btn" onclick="googleLogin()">Continue with Google</button>
+<button class="social-btn" onclick="facebookLogin()">Continue with Facebook</button>
+
+<div class="footer">
+Don't have an account? <span onclick="window.location.href='register.html'">Create account</span>
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup, sendPasswordResetEmail, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBWfnQ9KFDWA5V9_VfqQdWd-vL-psdcqTA",
+  authDomain: "karanchatapp-e0b1d.firebaseapp.com",
+  projectId: "karanchatapp-e0b1d",
+  appId: "1:992252113506:web:c55091651550918a43173b"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+onAuthStateChanged(auth,user=>{
+if(user){
+window.location.href="index.html";
+}
+});
+
+window.login=function(){
+signInWithEmailAndPassword(auth,email.value,password.value)
+.then(()=>window.location.href="index.html")
+.catch(err=>alert(err.message));
+}
+
+window.register=function(){
+createUserWithEmailAndPassword(auth,email.value,password.value)
+.then(()=>alert("Account Created"))
+.catch(err=>alert(err.message));
+}
+
+window.googleLogin=function(){
+const provider=new GoogleAuthProvider();
+signInWithPopup(auth,provider)
+.then(()=>window.location.href="index.html")
+.catch(err=>alert(err.message));
+}
+
+window.facebookLogin=function(){
+const provider=new FacebookAuthProvider();
+signInWithPopup(auth,provider)
+.then(()=>window.location.href="index.html")
+.catch(err=>alert(err.message));
+}
+
+window.forgotPassword=function(){
+if(!email.value){alert("Enter your email first");return;}
+sendPasswordResetEmail(auth,email.value)
+.then(()=>alert("Password reset email sent"))
+.catch(err=>alert(err.message));
+}
+
+</script>
+
+</body>
+</html>
