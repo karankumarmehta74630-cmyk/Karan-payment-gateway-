@@ -3,148 +3,218 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Karan Payment Gateway</title>
+<title>503 – Service Unavailable</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Poppins}
 
 body{
-min-height:100vh;
-background:linear-gradient(-45deg,#0f172a,#1e3a8a,#9333ea,#0f172a);
-background-size:400% 400%;
-animation:bg 15s ease infinite;
-color:#fff;
+height:100vh;
 display:flex;
+justify-content:center;
+align-items:center;
+background:#f3f4f6;
+color:#202124;
+overflow:hidden;
 }
 
-@keyframes bg{
-0%{background-position:0% 50%}
-50%{background-position:100% 50%}
-100%{background-position:0% 50%}
-}
-
-/* Sidebar */
-.sidebar{
-width:220px;
-background:rgba(0,0,0,0.3);
-padding:20px;
-display:flex;
-flex-direction:column;
-gap:15px;
-}
-
-.sidebar button{
-background:none;
-border:none;
-color:#fff;
-font-weight:600;
-cursor:pointer;
-padding:10px;
-text-align:left;
-border-radius:10px;
-transition:.3s;
-}
-
-.sidebar button:hover{
-background:rgba(255,255,255,0.1);
-}
-
-.main{
-flex:1;
+.container{
+max-width:520px;
+text-align:center;
 padding:30px;
-overflow:auto;
-}
-
-.section{
-display:none;
-animation:fade .4s ease;
-}
-
-.section.active{
-display:block;
+animation:fade .5s ease;
 }
 
 @keyframes fade{
-from{opacity:0;transform:translateY(15px)}
+from{opacity:0;transform:translateY(10px)}
 to{opacity:1;transform:translateY(0)}
 }
 
-.card{
-background:rgba(255,255,255,0.08);
-backdrop-filter:blur(15px);
-padding:20px;
-border-radius:20px;
-margin-bottom:20px;
+.error-code{
+font-size:90px;
+font-weight:700;
+color:#d93025;
 }
 
-input{
-width:100%;
-padding:12px;
-margin-top:10px;
-border:none;
-border-radius:10px;
-}
-
-button.primary{
-background:linear-gradient(135deg,#2563eb,#9333ea);
-border:none;
-padding:12px;
-border-radius:12px;
-color:#fff;
-font-weight:600;
-cursor:pointer;
-margin-top:10px;
-}
-
-.qr-box{
-display:inline-block;
-padding:15px;
-background:#fff;
-border-radius:20px;
-box-shadow:0 0 30px #9333ea;
-margin-top:15px;
-}
-
-.timer{
-color:#ff4d4d;
+.title{
+font-size:22px;
 margin-top:10px;
 font-weight:600;
 }
 
-.history-item{
-background:rgba(255,255,255,0.1);
-padding:10px;
-border-radius:10px;
+.subtitle{
 margin-top:8px;
-font-size:13px;
+color:#5f6368;
+font-size:14px;
+line-height:1.6;
 }
 
-.logout{
-background:#dc2626;
+.status{
 margin-top:15px;
+display:flex;
+justify-content:center;
+align-items:center;
+gap:8px;
+font-size:14px;
+color:#d93025;
 }
 
-@media(max-width:768px){
-body{flex-direction:column}
-.sidebar{
-flex-direction:row;
-width:100%;
-justify-content:space-around;
+.dot{
+width:8px;
+height:8px;
+background:#d93025;
+border-radius:50%;
+animation:blink 1s infinite;
 }
+
+@keyframes blink{
+0%{opacity:1}
+50%{opacity:.2}
+100%{opacity:1}
+}
+
+.spinner{
+margin:20px auto;
+width:28px;
+height:28px;
+border:3px solid #dadce0;
+border-top:3px solid #1a73e8;
+border-radius:50%;
+animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+100%{transform:rotate(360deg)}
+}
+
+.retry-text{
+font-size:13px;
+color:#5f6368;
+margin-top:8px;
+}
+
+button{
+margin-top:15px;
+padding:10px 18px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+font-weight:500;
+font-size:14px;
+transition:.3s;
+}
+
+.retry-btn{
+background:#1a73e8;
+color:#fff;
+}
+
+.retry-btn:hover{
+background:#1765cc;
+}
+
+.home-btn{
+background:#e8eaed;
+color:#202124;
+margin-left:8px;
+}
+
+.home-btn:hover{
+background:#dadce0;
+}
+
+/* Floating subtle particles */
+.particle{
+position:absolute;
+width:4px;
+height:4px;
+background:#d1d5db;
+border-radius:50%;
+opacity:.3;
+animation:float 12s linear infinite;
+}
+
+@keyframes float{
+0%{transform:translateY(100vh)}
+100%{transform:translateY(-10vh)}
+}
+
+@media(max-width:480px){
+.error-code{font-size:70px}
+.container{padding:20px}
 }
 </style>
 </head>
 <body>
 
-<div class="sidebar">
-<button onclick="showSection('dashboard')">Dashboard</button>
-<button onclick="showSection('create')">Create Payment</button>
-<button onclick="showSection('history')">History</button>
-<button onclick="showSection('profile')">Profile</button>
+<div class="container">
+
+<div class="error-code">503</div>
+
+<div class="title">Service Temporarily Unavailable</div>
+
+<div class="subtitle">
+Karan Payment Gateway is currently under scheduled maintenance.<br>
+Please try again shortly.
 </div>
+
+<div class="status">
+<div class="dot"></div>
+Server Status: Offline
+</div>
+
+<div class="spinner"></div>
+
+<div class="retry-text" id="retryTimer">
+Retrying in 10 seconds...
+</div>
+
+<div>
+<button class="retry-btn" onclick="retryNow()">Retry Now</button>
+<button class="home-btn" onclick="goHome()">Go to Homepage</button>
+</div>
+
+</div>
+
+<script>
+
+// Auto retry countdown
+let timeLeft = 10;
+let retryTimer = document.getElementById("retryTimer");
+
+let countdown = setInterval(()=>{
+retryTimer.innerText = "Retrying in " + timeLeft + " seconds...";
+timeLeft--;
+
+if(timeLeft < 0){
+clearInterval(countdown);
+location.reload();
+}
+},1000);
+
+function retryNow(){
+location.reload();
+}
+
+function goHome(){
+window.location.href="login.html";
+}
+
+// Floating particles
+for(let i=0;i<20;i++){
+let p=document.createElement("div");
+p.className="particle";
+p.style.left=Math.random()*100+"vw";
+p.style.animationDuration=(8+Math.random()*6)+"s";
+document.body.appendChild(p);
+}
+
+</script>
+
+</body>
+</html></div>
 
 <div class="main">
 
