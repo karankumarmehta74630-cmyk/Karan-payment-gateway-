@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Karan Payment Gateway</title>
+<title>Karan Payment Dashboard</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -12,52 +12,43 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:Poppins}
 
 body{
+background:linear-gradient(135deg,#0f172a,#1e3a8a);
 min-height:100vh;
-background:linear-gradient(-45deg,#0f172a,#1e3a8a,#9333ea,#0f172a);
-background-size:400% 400%;
-animation:bg 15s ease infinite;
-color:#fff;
 display:flex;
 justify-content:center;
 padding:20px;
+color:#fff;
 }
 
-@keyframes bg{
-0%{background-position:0% 50%}
-50%{background-position:100% 50%}
-100%{background-position:0% 50%}
-}
-
-.container{max-width:500px;width:100%}
+.container{max-width:450px;width:100%}
 
 .card{
-background:rgba(255,255,255,0.08);
+background:#ffffff10;
 backdrop-filter:blur(20px);
 border-radius:20px;
-padding:25px;
-margin-bottom:20px;
-box-shadow:0 30px 60px rgba(0,0,0,0.4);
-animation:fade .4s ease;
+padding:20px;
+box-shadow:0 20px 40px rgba(0,0,0,0.4);
+animation:fade .6s ease;
 }
 
 @keyframes fade{
-from{opacity:0;transform:translateY(15px)}
+from{opacity:0;transform:translateY(20px)}
 to{opacity:1;transform:translateY(0)}
 }
 
 .header{
 text-align:center;
-font-size:20px;
 font-weight:600;
 margin-bottom:15px;
+font-size:18px;
 }
 
 .profile{
-background:rgba(255,255,255,0.1);
+background:#ffffff20;
 padding:12px;
 border-radius:12px;
-font-size:13px;
 margin-bottom:15px;
+font-size:13px;
 }
 
 input{
@@ -66,78 +57,60 @@ padding:12px;
 border:none;
 border-radius:10px;
 margin-top:10px;
-outline:none;
 }
 
 button{
 width:100%;
 padding:12px;
-margin-top:12px;
+margin-top:10px;
 border:none;
-border-radius:12px;
+border-radius:10px;
+background:#6366f1;
+color:#fff;
 font-weight:600;
 cursor:pointer;
-background:linear-gradient(135deg,#2563eb,#9333ea);
-color:#fff;
 transition:.3s;
 }
 
 button:hover{transform:scale(1.05)}
 
-.qr-box{
+#qrSection{
 display:none;
-margin-top:20px;
 text-align:center;
-animation:fade .4s ease;
+margin-top:15px;
+animation:slide .5s ease;
 }
 
-.qr-inner{
-display:inline-block;
-background:#fff;
-padding:15px;
-border-radius:20px;
-box-shadow:0 0 30px #9333ea;
-animation:glow 2s infinite alternate;
-}
-
-@keyframes glow{
-from{box-shadow:0 0 20px #2563eb}
-to{box-shadow:0 0 40px #9333ea}
+@keyframes slide{
+from{opacity:0;transform:translateY(20px)}
+to{opacity:1;transform:translateY(0)}
 }
 
 .timer{
-margin-top:10px;
-font-weight:600;
 color:#ff4d4d;
-}
-
-.social{
-display:flex;
-gap:10px;
-margin-top:15px;
-}
-
-.social a{
-flex:1;
-text-align:center;
-padding:10px;
-border-radius:10px;
-text-decoration:none;
-color:#fff;
 font-weight:600;
+margin-top:8px;
 }
 
-.whatsapp{
-background:#25D366;
+.upi{
+display:flex;
+justify-content:space-around;
+margin-top:10px;
 }
 
-.instagram{
-background:#E1306C;
+.upi img{
+width:55px;
+background:#fff;
+padding:8px;
+border-radius:10px;
+cursor:pointer;
+transition:.3s;
 }
+
+.upi img:hover{transform:scale(1.1)}
 
 .logout{
-background:#dc2626;
-margin-top:15px;
+background:#ef4444;
 }
 </style>
 </head>
@@ -149,30 +122,31 @@ margin-top:15px;
 
 <div class="header">Karan Payment Gateway</div>
 
-<div class="profile" id="profileBox">Loading...</div>
+<div class="profile" id="profileBox">
+Loading profile...
+</div>
 
 <input type="number" id="amount" placeholder="Enter Amount ₹">
 
-<button onclick="generateQR()">Generate Payment QR</button>
+<button onclick="startPayment()">Generate Payment QR</button>
 
-<div class="qr-box" id="qrBox">
+<div id="qrSection">
 
-<div class="qr-inner">
 <div id="qrcode"></div>
-</div>
 
 <p id="orderText"></p>
 <p id="amountText"></p>
 <p class="timer" id="timer"></p>
 
+<div class="upi">
+<img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Google_Pay_Logo.svg" onclick="openUPI()">
+<img src="https://upload.wikimedia.org/wikipedia/commons/1/16/PhonePe_logo.svg" onclick="openUPI()">
+<img src="https://upload.wikimedia.org/wikipedia/commons/3/39/Paytm_logo.png" onclick="openUPI()">
+</div>
+
 <button onclick="downloadQR()">Download QR</button>
 <button onclick="shareQR()">Share Payment</button>
 
-</div>
-
-<div class="social">
-<a class="whatsapp" href="https://wa.me/" target="_blank">Chat on WhatsApp</a>
-<a class="instagram" href="https://www.instagram.com/karann._editz_?igsh=MWs2cmN1bWhha2k0Nw==" target="_blank">Follow Instagram</a>
 </div>
 
 <button class="logout" onclick="logout()">Logout</button>
@@ -196,17 +170,16 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-let timer;
-let timeLeft=60;
-let orderId="";
-let baseURL=window.location.href;
+let orderId="", amountVal="", timer, timeLeft=60;
+let upiLink="";
+let baseURL=window.location.origin+window.location.pathname;
 
 onAuthStateChanged(auth,user=>{
 if(!user){
 window.location.href="login.html";
 }else{
 document.getElementById("profileBox").innerHTML=
-"<b>Name:</b> "+(user.displayName || "User")+"<br>"+
+"<b>Name:</b> "+(user.displayName||"User")+"<br>"+
 "<b>Email:</b> "+user.email;
 }
 });
@@ -215,22 +188,33 @@ window.logout=function(){
 signOut(auth).then(()=>window.location.href="login.html");
 }
 
-window.generateQR=function(){
-let amt=amount.value;
-if(!amt || amt<=0){alert("Enter valid amount");return;}
+window.startPayment=function(){
 
+let amt=document.getElementById("amount").value;
+
+if(!amt || amt<=0){
+alert("Enter valid amount");
+return;
+}
+
+amountVal=amt;
 orderId="ORD"+Date.now();
 
-document.getElementById("qrBox").style.display="block";
+document.getElementById("qrSection").style.display="block";
+
 document.getElementById("orderText").innerText="Order ID: "+orderId;
 document.getElementById("amountText").innerText="Amount: ₹"+amt;
 
+let websiteQR=baseURL+"?amount="+amt;
+
 document.getElementById("qrcode").innerHTML="";
 new QRCode(document.getElementById("qrcode"),{
-text:baseURL+"?amount="+amt,
-width:220,
-height:220
+text:websiteQR,
+width:200,
+height:200
 });
+
+upiLink="upi://pay?pa=7463011305-14@ybl&pn=Karan&am="+amt+"&cu=INR&tn=Order "+orderId;
 
 startTimer();
 }
@@ -238,10 +222,13 @@ startTimer();
 function startTimer(){
 timeLeft=60;
 updateTimer();
+
 clearInterval(timer);
+
 timer=setInterval(()=>{
 timeLeft--;
 updateTimer();
+
 if(timeLeft<=0){
 clearInterval(timer);
 document.getElementById("timer").innerText="Expired";
@@ -253,26 +240,34 @@ function updateTimer(){
 document.getElementById("timer").innerText="Expires in "+timeLeft+" sec";
 }
 
+window.openUPI=function(){
+window.location.href=upiLink;
+}
+
 window.downloadQR=function(){
 let canvas=document.querySelector("#qrcode canvas");
 let link=document.createElement("a");
-link.href=canvas.toDataURL("image/png");
+link.href=canvas.toDataURL();
 link.download="QR_"+orderId+".png";
 link.click();
 }
 
 window.shareQR=async function(){
+
 let canvas=document.querySelector("#qrcode canvas");
-let blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));
+let blob=await new Promise(r=>canvas.toBlob(r));
 let file=new File([blob],"QR.png",{type:"image/png"});
 
+let shareURL=baseURL+"?amount="+amountVal;
+
 let text=
-"Karan Payment Gateway\n"+
-"Order ID: "+orderId+"\n"+
-baseURL;
+"Karan Payment\n"+
+"Order: "+orderId+"\n"+
+"Amount: ₹"+amountVal+"\n"+
+shareURL;
 
 if(navigator.canShare && navigator.canShare({files:[file]})){
-navigator.share({title:"Karan Payment",text:text,files:[file]});
+navigator.share({text:text,files:[file]});
 }else{
 window.open("https://wa.me/?text="+encodeURIComponent(text));
 }
