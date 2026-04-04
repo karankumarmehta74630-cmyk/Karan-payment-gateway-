@@ -28,7 +28,7 @@ backdrop-filter:blur(20px);
 border-radius:20px;
 padding:20px;
 box-shadow:0 20px 40px rgba(0,0,0,0.4);
-animation:fade .6s ease;
+animation:fade .5s ease;
 }
 
 @keyframes fade{
@@ -38,17 +38,25 @@ to{opacity:1;transform:translateY(0)}
 
 .header{
 text-align:center;
+font-size:18px;
 font-weight:600;
 margin-bottom:15px;
-font-size:18px;
 }
 
 .profile{
+display:flex;
+align-items:center;
+gap:10px;
 background:#ffffff20;
-padding:12px;
+padding:10px;
 border-radius:12px;
 margin-bottom:15px;
-font-size:13px;
+}
+
+.profile img{
+width:45px;
+height:45px;
+border-radius:50%;
 }
 
 input{
@@ -92,22 +100,9 @@ font-weight:600;
 margin-top:8px;
 }
 
-.upi{
-display:flex;
-justify-content:space-around;
-margin-top:10px;
+.pay-btn{
+background:#22c55e;
 }
-
-.upi img{
-width:55px;
-background:#fff;
-padding:8px;
-border-radius:10px;
-cursor:pointer;
-transition:.3s;
-}
-
-.upi img:hover{transform:scale(1.1)}
 
 .logout{
 background:#ef4444;
@@ -122,13 +117,11 @@ background:#ef4444;
 
 <div class="header">Karan Payment Gateway</div>
 
-<div class="profile" id="profileBox">
-Loading profile...
-</div>
+<div class="profile" id="profileBox"></div>
 
 <input type="number" id="amount" placeholder="Enter Amount ₹">
 
-<button onclick="startPayment()">Generate Payment QR</button>
+<button onclick="startPayment()">Generate QR</button>
 
 <div id="qrSection">
 
@@ -138,14 +131,10 @@ Loading profile...
 <p id="amountText"></p>
 <p class="timer" id="timer"></p>
 
-<div class="upi">
-<img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Google_Pay_Logo.svg" onclick="openUPI()">
-<img src="https://upload.wikimedia.org/wikipedia/commons/1/16/PhonePe_logo.svg" onclick="openUPI()">
-<img src="https://upload.wikimedia.org/wikipedia/commons/3/39/Paytm_logo.png" onclick="openUPI()">
-</div>
+<button class="pay-btn" onclick="openUPI()">Pay Now</button>
 
 <button onclick="downloadQR()">Download QR</button>
-<button onclick="shareQR()">Share Payment</button>
+<button onclick="shareQR()">Share</button>
 
 </div>
 
@@ -170,17 +159,18 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-let orderId="", amountVal="", timer, timeLeft=60;
-let upiLink="";
-let baseURL=window.location.origin+window.location.pathname;
+let upiLink="", timer, timeLeft=60, orderId="";
 
 onAuthStateChanged(auth,user=>{
 if(!user){
 window.location.href="login.html";
 }else{
 document.getElementById("profileBox").innerHTML=
-"<b>Name:</b> "+(user.displayName||"User")+"<br>"+
-"<b>Email:</b> "+user.email;
+`<img src="${user.photoURL || 'https://i.imgur.com/6VBx3io.png'}">
+<div>
+<b>${user.displayName || "User"}</b><br>
+${user.email}
+</div>`;
 }
 });
 
@@ -190,31 +180,23 @@ signOut(auth).then(()=>window.location.href="login.html");
 
 window.startPayment=function(){
 
-let amt=document.getElementById("amount").value;
+let amt=amount.value;
+if(!amt || amt<=0){alert("Enter valid amount");return;}
 
-if(!amt || amt<=0){
-alert("Enter valid amount");
-return;
-}
-
-amountVal=amt;
 orderId="ORD"+Date.now();
 
 document.getElementById("qrSection").style.display="block";
-
 document.getElementById("orderText").innerText="Order ID: "+orderId;
 document.getElementById("amountText").innerText="Amount: ₹"+amt;
 
-let websiteQR=baseURL+"?amount="+amt;
+upiLink=`upi://pay?pa=7463011305-14@ybl&pn=Karan&am=${amt}&cu=INR&tn=Order ${orderId}`;
 
 document.getElementById("qrcode").innerHTML="";
 new QRCode(document.getElementById("qrcode"),{
-text:websiteQR,
+text:upiLink,
 width:200,
 height:200
 });
-
-upiLink="upi://pay?pa=7463011305-14@ybl&pn=Karan&am="+amt+"&cu=INR&tn=Order "+orderId;
 
 startTimer();
 }
@@ -248,7 +230,7 @@ window.downloadQR=function(){
 let canvas=document.querySelector("#qrcode canvas");
 let link=document.createElement("a");
 link.href=canvas.toDataURL();
-link.download="QR_"+orderId+".png";
+link.download="QR.png";
 link.click();
 }
 
@@ -258,18 +240,10 @@ let canvas=document.querySelector("#qrcode canvas");
 let blob=await new Promise(r=>canvas.toBlob(r));
 let file=new File([blob],"QR.png",{type:"image/png"});
 
-let shareURL=baseURL+"?amount="+amountVal;
-
-let text=
-"Karan Payment\n"+
-"Order: "+orderId+"\n"+
-"Amount: ₹"+amountVal+"\n"+
-shareURL;
-
 if(navigator.canShare && navigator.canShare({files:[file]})){
-navigator.share({text:text,files:[file]});
+navigator.share({files:[file]});
 }else{
-window.open("https://wa.me/?text="+encodeURIComponent(text));
+alert("Sharing not supported");
 }
 }
 
