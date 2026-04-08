@@ -3,149 +3,107 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign In - Karan Payment</title>
+<title>Login</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Roboto}
-
 body{
-height:100vh;
+margin:0;
+font-family:Poppins;
+background:#f1f3f6;
 display:flex;
 justify-content:center;
 align-items:center;
-background:#f2f2f2;
-animation:fadeBody .5s ease;
-}
-
-@keyframes fadeBody{
-from{opacity:0}
-to{opacity:1}
+height:100vh;
 }
 
 .card{
-width:380px;
 background:#fff;
-padding:35px;
-border-radius:10px;
-box-shadow:0 8px 25px rgba(0,0,0,0.1);
-text-align:center;
-animation:fadeCard .5s ease;
+width:350px;
+padding:25px;
+border-radius:15px;
+box-shadow:0 10px 30px rgba(0,0,0,0.1);
+animation:fade .5s ease;
 }
 
-@keyframes fadeCard{
-from{transform:translateY(15px);opacity:0}
-to{transform:translateY(0);opacity:1}
+@keyframes fade{
+from{opacity:0;transform:translateY(20px)}
+to{opacity:1;transform:translateY(0)}
 }
 
 .logo{
 width:60px;
 height:60px;
-margin:auto;
 border-radius:50%;
-background:radial-gradient(circle,#4a90e2,#2563eb);
+background:#1e40af;
+color:#fff;
 display:flex;
 align-items:center;
 justify-content:center;
-color:#fff;
-font-weight:700;
-font-size:20px;
-margin-bottom:15px;
+font-weight:600;
+margin:auto;
 }
 
-h2{
-font-weight:500;
-margin-bottom:5px;
-}
+h2{text-align:center;margin-top:10px}
 
-.subtitle{
-font-size:13px;
-color:#777;
-margin-bottom:25px;
-}
-
-.input-group{
-text-align:left;
-margin-bottom:20px;
-}
-
-.input-group input{
+input{
 width:100%;
+padding:10px;
+margin-top:15px;
 border:none;
 border-bottom:1px solid #ccc;
-padding:8px 0;
 outline:none;
-transition:.3s;
-}
-
-.input-group input:focus{
-border-bottom:2px solid #2563eb;
 }
 
 .row{
 display:flex;
 justify-content:space-between;
-align-items:center;
-font-size:13px;
-margin-bottom:20px;
+font-size:12px;
+margin-top:10px;
 }
 
-button{
+.btn{
 width:100%;
 padding:10px;
+margin-top:15px;
 border:none;
-border-radius:4px;
+background:#1e40af;
+color:#fff;
+border-radius:5px;
 cursor:pointer;
-font-weight:500;
 transition:.3s;
 }
 
-.sign-btn{
-background:#2563eb;
-color:#fff;
-margin-bottom:15px;
+.btn:active{transform:scale(.95)}
+
+.social{
+margin-top:15px;
 }
 
-.sign-btn:hover{
-background:#1e40af;
-}
-
-.divider{
+.social button{
+width:100%;
+padding:10px;
+margin-top:8px;
+border:1px solid #ccc;
+background:#fff;
+border-radius:5px;
 display:flex;
 align-items:center;
-margin:20px 0;
+justify-content:center;
+gap:10px;
+cursor:pointer;
+transition:.3s;
+}
+
+.social button:active{transform:scale(.95)}
+
+.social img{width:20px}
+
+.link{
+text-align:center;
+margin-top:10px;
 font-size:13px;
-color:#777;
-}
-
-.divider::before,
-.divider::after{
-content:"";
-flex:1;
-height:1px;
-background:#ddd;
-margin:0 10px;
-}
-
-.social-btn{
-background:#f5f5f5;
-color:#444;
-margin-bottom:10px;
-border:1px solid #ddd;
-}
-
-.social-btn:hover{
-background:#eaeaea;
-}
-
-.footer{
-margin-top:15px;
-font-size:13px;
-}
-
-.footer span{
-color:#2563eb;
 cursor:pointer;
 }
 </style>
@@ -157,30 +115,31 @@ cursor:pointer;
 <div class="logo">KP</div>
 
 <h2>Sign in</h2>
-<div class="subtitle">to continue to your account</div>
 
-<div class="input-group">
 <input type="email" id="email" placeholder="Email">
-</div>
-
-<div class="input-group">
 <input type="password" id="password" placeholder="Password">
-</div>
 
 <div class="row">
-<label><input type="checkbox"> Keep me signed in</label>
-<span style="color:#2563eb;cursor:pointer" onclick="forgotPassword()">Forgot Password?</span>
+<span></span>
+<span onclick="window.location='forgot.html'">Forgot Password?</span>
 </div>
 
-<button class="sign-btn" onclick="login()">SIGN IN</button>
+<button class="btn" onclick="login()">SIGN IN</button>
 
-<div class="divider">or</div>
+<div class="social">
+<button onclick="googleLogin()">
+<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg">
+Continue with Google
+</button>
 
-<button class="social-btn" onclick="googleLogin()">Continue with Google</button>
-<button class="social-btn" onclick="facebookLogin()">Continue with Facebook</button>
+<button onclick="facebookLogin()">
+<img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png">
+Continue with Facebook
+</button>
+</div>
 
-<div class="footer">
-Don't have an account? <span onclick="window.location.href='register.html'">Create account</span>
+<div class="link" onclick="window.location='signup.html'">
+Don't have an account? Create account
 </div>
 
 </div>
@@ -188,7 +147,7 @@ Don't have an account? <span onclick="window.location.href='register.html'">Crea
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup, sendPasswordResetEmail, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBWfnQ9KFDWA5V9_VfqQdWd-vL-psdcqTA",
@@ -200,43 +159,20 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-onAuthStateChanged(auth,user=>{
-if(user){
-window.location.href="index.html";
-}
-});
-
 window.login=function(){
 signInWithEmailAndPassword(auth,email.value,password.value)
-.then(()=>window.location.href="index.html")
-.catch(err=>alert(err.message));
-}
-
-window.register=function(){
-createUserWithEmailAndPassword(auth,email.value,password.value)
-.then(()=>alert("Account Created"))
-.catch(err=>alert(err.message));
+.then(()=>window.location="index.html")
+.catch(e=>alert(e.message));
 }
 
 window.googleLogin=function(){
 const provider=new GoogleAuthProvider();
 signInWithPopup(auth,provider)
-.then(()=>window.location.href="index.html")
-.catch(err=>alert(err.message));
+.then(()=>window.location="index.html");
 }
 
 window.facebookLogin=function(){
-const provider=new FacebookAuthProvider();
-signInWithPopup(auth,provider)
-.then(()=>window.location.href="index.html")
-.catch(err=>alert(err.message));
-}
-
-window.forgotPassword=function(){
-if(!email.value){alert("Enter your email first");return;}
-sendPasswordResetEmail(auth,email.value)
-.then(()=>alert("Password reset email sent"))
-.catch(err=>alert(err.message));
+alert("Enable Facebook login in Firebase");
 }
 
 </script>
