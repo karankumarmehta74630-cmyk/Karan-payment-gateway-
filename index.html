@@ -211,7 +211,7 @@ orderId="ORD"+Math.floor(Math.random()*999999999);
 
 document.getElementById("order").innerText="Order ID: "+orderId;
 
-upiLink=`upi://pay?pa=merchant@upi&pn=Karan&am=${amt}&cu=INR&tn=${orderId}`;
+upiLink=`upi://pay?pa=7463011305-14@ybl&pn=Karan&am=${amt}&cu=INR&tn=${orderId}`;
 
 qrcode.innerHTML="";
 new QRCode(qrcode,{text:upiLink,width:200,height:200});
