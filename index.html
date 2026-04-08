@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Karan Dashboard</title>
+<title>Karan FinTech Pro</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -11,11 +11,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Poppins}
 
-body{
-display:flex;
-min-height:100vh;
-background:#f1f5f9;
-}
+body{display:flex;min-height:100vh;background:#f1f5f9}
 
 /* Sidebar */
 .sidebar{
@@ -25,68 +21,46 @@ color:#fff;
 padding:20px;
 }
 
-.sidebar h2{margin-bottom:20px}
-
 .sidebar div{
 margin:10px 0;
 cursor:pointer;
 padding:8px;
-border-radius:5px;
+border-radius:6px;
 }
-
-.sidebar div:hover{
-background:#2563eb;
-}
+.sidebar div:hover{background:#2563eb}
 
 /* Content */
-.content{
-flex:1;
-padding:20px;
-}
+.content{flex:1;padding:20px}
 
 /* Sections */
-.section{
-display:none;
-animation:fade .4s ease;
-}
-
+.section{display:none;animation:fade .4s ease}
 .active{display:block}
 
 @keyframes fade{
-from{opacity:0;transform:translateY(15px)}
+from{opacity:0;transform:translateY(10px)}
 to{opacity:1;transform:translateY(0)}
 }
 
-/* Cards */
+/* Card */
 .card{
 background:#fff;
 padding:20px;
 border-radius:12px;
+max-width:420px;
 box-shadow:0 5px 20px rgba(0,0,0,0.1);
-max-width:400px;
 }
 
 /* Profile */
-.profile{
-display:flex;
-align-items:center;
-gap:10px;
-margin-bottom:15px;
-}
-
-.profile img{
-width:60px;
-height:60px;
-border-radius:50%;
-}
+.profile{display:flex;gap:10px;margin-bottom:15px}
+.profile img{width:60px;height:60px;border-radius:50%}
 
 /* Input */
 input{
 width:100%;
 padding:10px;
 margin-top:10px;
-border:1px solid #ccc;
 border-radius:8px;
+border:1px solid #ccc;
 }
 
 /* Buttons */
@@ -95,20 +69,32 @@ width:100%;
 padding:10px;
 margin-top:10px;
 border:none;
+border-radius:8px;
 background:#2563eb;
 color:#fff;
-border-radius:8px;
 cursor:pointer;
+transition:.3s;
 }
+button:disabled{background:#aaa}
 
 /* QR */
 #qrcode{text-align:center;margin-top:10px}
 .timer{color:red;margin-top:5px}
+
+/* Success */
+.success{
+text-align:center;
+animation:fade .5s ease;
+}
+.check{
+font-size:50px;
+color:green;
+}
+
 </style>
 </head>
 <body>
 
-<!-- Sidebar -->
 <div class="sidebar">
 <h2>Karan</h2>
 <div onclick="show('profile')">Profile</div>
@@ -117,20 +103,15 @@ cursor:pointer;
 <div onclick="logout()">Logout</div>
 </div>
 
-<!-- Content -->
 <div class="content">
 
 <!-- PROFILE -->
 <div id="profile" class="section active">
 <div class="card">
-
 <h3>Profile</h3>
-
 <div class="profile" id="profileBox"></div>
-
 <input id="name" placeholder="Update Name">
-<button onclick="updateProfile()">Update Profile</button>
-
+<button onclick="updateProfile()">Update</button>
 </div>
 </div>
 
@@ -145,9 +126,11 @@ cursor:pointer;
 <button onclick="generateQR()">Generate QR</button>
 
 <div id="qrcode"></div>
+<p id="order"></p>
 <p id="timer" class="timer"></p>
 
-<button onclick="payNow()">Pay Now</button>
+<button id="payBtn" onclick="payNow()">Pay Now</button>
+<button id="regenBtn" onclick="generateQR()" style="display:none">Regenerate</button>
 
 </div>
 </div>
@@ -155,14 +138,20 @@ cursor:pointer;
 <!-- EMAIL -->
 <div id="email" class="section">
 <div class="card">
-
 <h3>Change Gmail</h3>
-
 <input id="newEmail" placeholder="New Email">
 <input id="password" placeholder="Password">
-
 <button onclick="changeEmail()">Update Email</button>
+</div>
+</div>
 
+<!-- SUCCESS -->
+<div id="success" class="section">
+<div class="card success">
+<div class="check">✔</div>
+<h3>Payment Successful</h3>
+<p id="successText"></p>
+<button onclick="show('payment')">Back</button>
 </div>
 </div>
 
@@ -171,7 +160,7 @@ cursor:pointer;
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut, updateProfile, EmailAuthProvider, reauthenticateWithCredential, updateEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut, updateProfile, EmailAuthProvider, reauthenticateWithCredential, verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBWfnQ9KFDWA5V9_VfqQdWd-vL-psdcqTA",
@@ -183,12 +172,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-let upiLink="", timer, time=60;
+let upiLink="", timer, time=60, orderId="";
 
-/* Section switch */
-window.show=function(sec){
+/* Section */
+window.show=function(id){
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-document.getElementById(sec).classList.add("active");
+document.getElementById(id).classList.add("active");
 }
 
 /* Auth */
@@ -198,31 +187,37 @@ window.location="login.html";
 }else{
 profileBox.innerHTML=`
 <img src="${user.photoURL || 'https://i.imgur.com/6VBx3io.png'}">
-<div><b>${user.displayName || "User"}</b><br>${user.email}</div>`;
+<div><b>${user.displayName}</b><br>${user.email}</div>`;
 name.value=user.displayName || "";
 }
 });
 
-window.logout=function(){
-signOut(auth).then(()=>window.location="login.html");
-}
+/* Logout */
+window.logout=()=>signOut(auth).then(()=>window.location="login.html");
 
 /* Update Profile */
-window.updateProfile=async function(){
-let user=auth.currentUser;
-await updateProfile(user,{displayName:name.value});
+window.updateProfile=async()=>{
+await updateProfile(auth.currentUser,{displayName:name.value});
 alert("Updated");
 }
 
-/* Payment */
+/* PAYMENT */
 window.generateQR=function(){
+
 let amt=amount.value;
 if(!amt){alert("Enter amount");return;}
 
-upiLink=`upi://pay?pa=merchant@upi&pn=Karan&am=${amt}&cu=INR`;
+orderId="ORD"+Math.floor(Math.random()*999999999);
+
+document.getElementById("order").innerText="Order ID: "+orderId;
+
+upiLink=`upi://pay?pa=merchant@upi&pn=Karan&am=${amt}&cu=INR&tn=${orderId}`;
 
 qrcode.innerHTML="";
 new QRCode(qrcode,{text:upiLink,width:200,height:200});
+
+payBtn.disabled=false;
+regenBtn.style.display="none";
 
 startTimer();
 }
@@ -233,33 +228,40 @@ clearInterval(timer);
 
 timer=setInterval(()=>{
 time--;
-timerText.innerText="Expires in "+time+" sec";
+document.getElementById("timer").innerText="Expires in "+time+" sec";
+
 if(time<=0){
 clearInterval(timer);
 timerText.innerText="Expired";
+payBtn.disabled=true;
+regenBtn.style.display="block";
 }
 },1000);
 }
 
 window.payNow=function(){
-window.location.href=upiLink;
+show("success");
+successText.innerText="Order "+orderId+" Paid Successfully";
 }
 
-/* Change Email */
+/* EMAIL FIX */
 window.changeEmail=async function(){
+
 let user=auth.currentUser;
 
 try{
 const cred=EmailAuthProvider.credential(user.email,password.value);
 await reauthenticateWithCredential(user,cred);
-await updateEmail(user,newEmail.value);
-alert("Email Updated");
+
+await verifyBeforeUpdateEmail(user,newEmail.value);
+
+alert("Verification email sent");
+
 }catch(e){
 alert(e.message);
 }
 }
 
 </script>
-
 </body>
 </html>
