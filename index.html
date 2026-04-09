@@ -13,49 +13,29 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Poppins}
 
-body{
-display:flex;
-min-height:100vh;
-background:#f1f5f9;
-}
+body{display:flex;min-height:100vh;background:#f1f5f9}
 
-/* Sidebar */
-.sidebar{
-width:220px;
-background:#111827;
-color:#fff;
-padding:20px;
-}
+.sidebar{width:220px;background:#111827;color:#fff;padding:20px}
+.sidebar div{margin:12px 0;cursor:pointer}
 
-.sidebar div{
-margin:12px 0;
-cursor:pointer;
-}
-
-/* Mobile */
 @media(max-width:768px){
 body{flex-direction:column}
 .sidebar{width:100%;display:flex;justify-content:space-around}
 }
 
-/* Content */
 .content{flex:1;padding:20px}
 
-/* Card */
 .card{
 background:#fff;
 padding:20px;
 border-radius:12px;
 box-shadow:0 5px 20px rgba(0,0,0,0.1);
-max-width:420px;
-width:100%;
+max-width:420px;width:100%;
 }
 
-/* Profile */
 .profile{display:flex;gap:10px;align-items:center}
 .profile img{width:50px;height:50px;border-radius:50%}
 
-/* Inputs */
 input{
 width:100%;
 padding:10px;
@@ -64,7 +44,6 @@ border:1px solid #ccc;
 border-radius:6px;
 }
 
-/* Buttons */
 button{
 width:100%;
 padding:10px;
@@ -76,24 +55,17 @@ border-radius:6px;
 cursor:pointer;
 }
 
-/* Sections */
 .section{display:none}
 .active{display:block}
 
-/* Timer */
 .timer{color:red;margin-top:5px}
 
-/* Loader */
 .loader{
 position:fixed;
-top:0;left:0;
-width:100%;height:100%;
+top:0;left:0;width:100%;height:100%;
 background:#000a;
-display:flex;
-justify-content:center;
-align-items:center;
-color:#fff;
-display:none;
+display:flex;justify-content:center;align-items:center;
+color:#fff;display:none;
 }
 </style>
 </head>
@@ -102,7 +74,6 @@ display:none;
 
 <div class="loader" id="loader">Processing...</div>
 
-<!-- Sidebar -->
 <div class="sidebar">
 <div onclick="show('payment')">Payment</div>
 <div onclick="show('history')">History</div>
@@ -110,7 +81,6 @@ display:none;
 <div onclick="logout()">Logout</div>
 </div>
 
-<!-- Content -->
 <div class="content">
 
 <!-- PAYMENT -->
@@ -118,6 +88,8 @@ display:none;
 <div class="card">
 
 <h3>Payment</h3>
+
+<div id="profileBox" class="profile"></div>
 
 <input id="amount" placeholder="Enter Amount">
 
@@ -147,7 +119,7 @@ display:none;
 <div id="profile" class="section">
 <div class="card">
 <h3>Profile</h3>
-<div id="profileBox" class="profile"></div>
+<div id="profileFull"></div>
 </div>
 </div>
 
@@ -168,8 +140,8 @@ appId:"1:992252113506:web:c55091651550918a43173b"
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-let upiLink="", orderId="", timer, time=60;
-let paymentLink="";
+let upiLink="", orderId="", timer, time=60, paymentLink="";
+let currentUser=null;
 
 /* Loader */
 function load3sec(){
@@ -183,14 +155,31 @@ document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
 document.getElementById(id).classList.add("active");
 }
 
-/* Auth */
+/* Auth + Guest Mode */
 onAuthStateChanged(auth,user=>{
-if(!user){window.location="login.html";}
-else{
-profileBox.innerHTML=`
-<img src="${user.photoURL || 'https://i.imgur.com/6VBx3io.png'}">
-<div><b>${user.displayName}</b><br>${user.email}</div>`;
+
+currentUser=user;
+
+let url=new URL(window.location.href);
+let name=url.searchParams.get("name");
+let email=url.searchParams.get("email");
+
+if(user){
+name=user.displayName;
+email=user.email;
 }
+
+if(!user && !url.searchParams.get("amount")){
+window.location="login.html";
+return;
+}
+
+profileBox.innerHTML=`
+<img src="${user?.photoURL || 'https://i.imgur.com/6VBx3io.png'}">
+<div><b>${name || "Guest"}</b><br>${email || ""}</div>`;
+
+profileFull.innerHTML=profileBox.innerHTML;
+
 });
 
 /* Generate Payment */
@@ -203,9 +192,13 @@ load3sec();
 
 orderId="ORD"+Date.now();
 
-upiLink=`upi://pay?pa=7463011305@amazonpay&pn=Karan%20Payment&am=${amt}&cu=INR`;
+let name=currentUser?.displayName || "Guest";
+let email=currentUser?.email || "guest@email.com";
 
-paymentLink=window.location.origin + window.location.pathname + "?amount="+amt;
+upiLink=`upi://pay?pa=7463011305@amazonpay&pn=Karan&am=${amt}&cu=INR`;
+
+paymentLink=window.location.origin+window.location.pathname+
+`?amount=${amt}&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`;
 
 qrcode.innerHTML="";
 new QRCode(qrcode,{text:upiLink,width:200,height:200});
@@ -236,7 +229,7 @@ if(!upiLink){alert("Generate first");return;}
 window.location.href=upiLink;
 }
 
-/* Copy Link */
+/* Copy */
 window.copyLink=function(){
 navigator.clipboard.writeText(paymentLink);
 alert("Link Copied");
@@ -244,6 +237,7 @@ alert("Link Copied");
 
 /* Success */
 window.markSuccess=function(){
+if(!currentUser) return;
 
 let history=JSON.parse(localStorage.getItem("payHistory"))||[];
 
@@ -255,9 +249,8 @@ date:new Date().toLocaleString()
 
 localStorage.setItem("payHistory",JSON.stringify(history));
 
-alert("Payment Saved");
-
 loadHistory();
+alert("Saved");
 }
 
 /* History */
@@ -272,22 +265,19 @@ historyList.appendChild(div);
 }
 loadHistory();
 
-/* Receipt with QR */
+/* Receipt */
 window.downloadReceipt=function(){
 
-let user=auth.currentUser;
-if(!user){alert("Login required");return;}
+let url=new URL(window.location.href);
+
+let senderName=url.searchParams.get("name") || currentUser?.displayName || "User";
+let senderEmail=url.searchParams.get("email") || currentUser?.email || "";
+
+let amt=amount.value;
 
 let { jsPDF } = window.jspdf;
-
 let doc=new jsPDF();
 
-let name=user.displayName || "User";
-let email=user.email;
-let amt=amount.value;
-let date=new Date().toLocaleString();
-
-// Title
 doc.setFontSize(18);
 doc.text("Karan Payment Gateway",20,20);
 
@@ -295,40 +285,36 @@ doc.setFontSize(12);
 doc.text("Payment Receipt",20,30);
 doc.line(20,32,190,32);
 
-// Details
-doc.text("Name: "+name,20,45);
-doc.text("Email: "+email,20,55);
+doc.text("Name: "+senderName,20,45);
+doc.text("Email: "+senderEmail,20,55);
 doc.text("Amount: ₹"+amt,20,65);
 doc.text("Order ID: "+orderId,20,75);
-doc.text("Date: "+date,20,85);
+doc.text("Date: "+new Date().toLocaleString(),20,85);
 
 doc.text("Status: SUCCESS",20,100);
 
-// QR IMAGE
-let qrCanvas=document.querySelector("#qrcode canvas");
-
-if(qrCanvas){
-let imgData=qrCanvas.toDataURL("image/png");
-doc.addImage(imgData,"PNG",130,40,60,60);
+// QR add
+let canvas=document.querySelector("#qrcode canvas");
+if(canvas){
+let img=canvas.toDataURL("image/png");
+doc.addImage(img,"PNG",130,40,60,60);
 }
 
-// Footer
-doc.setFontSize(10);
-doc.text("Thank you for using Karan Payment Gateway",20,120);
-
-// Download
 doc.save("Receipt_"+orderId+".pdf");
 
 }
 
-/* Auto amount from link */
+/* Auto load from link */
 window.onload=function(){
+
 let url=new URL(window.location.href);
 let amt=url.searchParams.get("amount");
+
 if(amt){
 amount.value=amt;
 generatePayment();
 }
+
 }
 
 /* Logout */
@@ -337,6 +323,5 @@ signOut(auth).then(()=>window.location="login.html");
 }
 
 </script>
-
 </body>
 </html>
