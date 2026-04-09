@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Karan FinTech Pro</title>
+<title>Karan FinTech</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -13,113 +13,91 @@
 
 /* 🌈 Background */
 body{
-display:flex;
-min-height:100vh;
 background:linear-gradient(135deg,#e0e7ff,#d1fae5);
-overflow:hidden;
+padding-bottom:80px;
 }
 
-/* 🔥 Loading Screen */
-.loader{
-position:fixed;
-width:100%;
-height:100%;
-background:#111827;
-color:#fff;
-display:flex;
-justify-content:center;
-align-items:center;
-font-size:20px;
-z-index:9999;
-animation:fadeOut 2s forwards 2s;
-}
-@keyframes fadeOut{
-to{opacity:0;visibility:hidden}
+/* 🔥 Header */
+.header{
+padding:15px;
+font-size:18px;
+font-weight:600;
 }
 
-/* Sidebar */
-.sidebar{
-width:220px;
-background:#111827;
-color:#fff;
-padding:20px;
-}
-
-.sidebar h2{margin-bottom:20px}
-
-.sidebar div{
-margin:10px 0;
-padding:10px;
-border-radius:8px;
-cursor:pointer;
-transition:.3s;
-}
-.sidebar div:hover{background:#2563eb}
-
-/* Content */
-.content{
-flex:1;
-padding:20px;
-overflow:auto;
-}
-
-/* Card */
+/* 📦 Card */
 .card{
-background:rgba(255,255,255,0.7);
-backdrop-filter:blur(15px);
-padding:20px;
+background:#fff;
+margin:12px;
+padding:15px;
 border-radius:15px;
-box-shadow:0 10px 30px rgba(0,0,0,0.1);
-max-width:420px;
-animation:fade .5s ease;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+animation:fade .4s ease;
 }
 
 @keyframes fade{
-from{opacity:0;transform:translateY(15px)}
+from{opacity:0;transform:translateY(10px)}
 to{opacity:1;transform:translateY(0)}
 }
 
-/* Profile */
-.profile{display:flex;gap:10px;margin-bottom:15px}
-.profile img{width:60px;height:60px;border-radius:50%}
+/* 👤 Profile */
+.profile{
+display:flex;
+align-items:center;
+gap:10px;
+}
 
-/* Input */
+.profile img{
+width:50px;
+height:50px;
+border-radius:50%;
+}
+
+/* Inputs */
 input{
 width:100%;
-padding:10px;
+padding:12px;
 margin-top:10px;
 border-radius:10px;
 border:1px solid #ccc;
 }
 
-/* Button */
+/* Buttons */
 button{
 width:100%;
-padding:10px;
+padding:12px;
 margin-top:10px;
 border:none;
 border-radius:10px;
 background:#2563eb;
 color:#fff;
-cursor:pointer;
-transition:.3s;
+font-size:14px;
 }
-button:hover{transform:scale(1.05)}
-button:disabled{background:#aaa}
 
 /* QR */
 #qrcode{
-margin-top:10px;
 display:flex;
 justify-content:center;
-animation:zoom .4s ease;
+margin-top:10px;
 }
-@keyframes zoom{
-from{transform:scale(0.8);opacity:0}
-to{transform:scale(1);opacity:1}
+.timer{color:red;text-align:center;margin-top:5px}
+
+/* Bottom Nav */
+.nav{
+position:fixed;
+bottom:0;
+width:100%;
+background:#fff;
+display:flex;
+justify-content:space-around;
+padding:10px;
+box-shadow:0 -5px 15px rgba(0,0,0,0.1);
 }
 
-.timer{color:red;margin-top:5px}
+.nav div{
+text-align:center;
+font-size:12px;
+cursor:pointer;
+}
 
 /* Sections */
 .section{display:none}
@@ -128,38 +106,24 @@ to{transform:scale(1);opacity:1}
 /* Success */
 .success{text-align:center}
 .check{
-font-size:60px;
+font-size:50px;
 color:green;
-animation:pop .5s ease;
 }
-@keyframes pop{
-from{transform:scale(0)}
-to{transform:scale(1)}
-}
-
 </style>
 </head>
 <body>
 
-<div class="loader">Loading Karan FinTech...</div>
-
-<div class="sidebar">
-<h2>Karan</h2>
-<div onclick="show('profile')">Profile</div>
-<div onclick="show('payment')">Payment</div>
-<div onclick="show('email')">Change Gmail</div>
-<div onclick="logout()">Logout</div>
-</div>
-
-<div class="content">
+<div class="header">Karan FinTech</div>
 
 <!-- PROFILE -->
 <div id="profile" class="section active">
 <div class="card">
-<h3>Profile</h3>
-<div id="profileBox" class="profile"></div>
+
+<div class="profile" id="profileBox"></div>
+
 <input id="name" placeholder="Update Name">
-<button onclick="updateProfile()">Update</button>
+<button onclick="updateProfile()">Update Profile</button>
+
 </div>
 </div>
 
@@ -169,16 +133,16 @@ to{transform:scale(1)}
 
 <h3>Payment</h3>
 
-<input id="amount" placeholder="Enter Amount">
+<input id="amount" placeholder="Enter Amount ₹">
 
 <button onclick="generateQR()">Generate QR</button>
 
 <div id="qrcode"></div>
-<p id="order"></p>
+<p id="order" style="text-align:center"></p>
 <p id="timer" class="timer"></p>
 
 <button id="payBtn" onclick="payNow()">Pay Now</button>
-<button id="regenBtn" onclick="generateQR()" style="display:none">Regenerate</button>
+<button id="regenBtn" style="display:none" onclick="generateQR()">Regenerate</button>
 
 </div>
 </div>
@@ -186,38 +150,48 @@ to{transform:scale(1)}
 <!-- EMAIL -->
 <div id="email" class="section">
 <div class="card">
+
 <h3>Change Gmail</h3>
+
 <input id="newEmail" placeholder="New Email">
 <input id="password" placeholder="Password">
+
 <button onclick="changeEmail()">Update Email</button>
+
 </div>
 </div>
 
 <!-- SUCCESS -->
 <div id="success" class="section">
 <div class="card success">
+
 <div class="check">✔</div>
 <h3>Payment Success</h3>
 <p id="successText"></p>
+
 <button onclick="show('payment')">Back</button>
+
 </div>
 </div>
 
+<!-- 🔻 Bottom Nav -->
+<div class="nav">
+<div onclick="show('profile')">👤<br>Profile</div>
+<div onclick="show('payment')">💳<br>Pay</div>
+<div onclick="show('email')">📧<br>Email</div>
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut, updateProfile, EmailAuthProvider, reauthenticateWithCredential, verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, updateProfile, EmailAuthProvider, reauthenticateWithCredential, verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const firebaseConfig = {
+const app = initializeApp({
 apiKey:"AIzaSyBWfnQ9KFDWA5V9_VfqQdWd-vL-psdcqTA",
 authDomain:"karanchatapp-e0b1d.firebaseapp.com",
-projectId:"karanchatapp-e0b1d",
-appId:"1:992252113506:web:c55091651550918a43173b"
-};
+projectId:"karanchatapp-e0b1d"
+});
 
-const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 
 let upiLink="", timer, time=60, orderId="";
@@ -230,36 +204,31 @@ document.getElementById(id).classList.add("active");
 
 /* Auth */
 onAuthStateChanged(auth,user=>{
-if(!user){window.location="login.html";}
+if(!user) location="login.html";
 else{
 profileBox.innerHTML=`
-<img src="${user.photoURL || 'https://i.imgur.com/6VBx3io.png'}">
+<img src="${user.photoURL}">
 <div><b>${user.displayName}</b><br>${user.email}</div>`;
 name.value=user.displayName||"";
 }
 });
 
-/* Logout */
-window.logout=()=>signOut(auth).then(()=>window.location="login.html");
-
 /* Profile */
-window.updateProfile=async()=>{
-await updateProfile(auth.currentUser,{displayName:name.value});
-alert("Updated");
-}
+window.updateProfile=()=>updateProfile(auth.currentUser,{displayName:name.value});
 
 /* Payment */
 window.generateQR=()=>{
 let amt=amount.value;
 if(!amt)return alert("Enter amount");
 
-orderId="ORD"+Math.floor(Math.random()*999999999);
-order.innerText="Order: "+orderId;
+orderId="ORD"+Math.floor(Math.random()*9999999);
 
-upiLink=`upi://pay?pa=merchant@upi&pn=Karan&am=${amt}&cu=INR&tn=${orderId}`;
+upiLink=`upi://pay?pa=7463011305-14@ybl&pn=Karan&am=${amt}&cu=INR`;
 
 qrcode.innerHTML="";
-new QRCode(qrcode,{text:upiLink,width:200,height:200});
+new QRCode(qrcode,{text:upiLink,width:180,height:180});
+
+order.innerText="Order: "+orderId;
 
 payBtn.disabled=false;
 regenBtn.style.display="none";
@@ -273,7 +242,7 @@ clearInterval(timer);
 
 timer=setInterval(()=>{
 time--;
-timer.innerText="Expires in "+time+" sec";
+document.getElementById("timer").innerText="Expires in "+time+" sec";
 
 if(time<=0){
 clearInterval(timer);
@@ -289,15 +258,13 @@ show("success");
 successText.innerText="Order "+orderId+" Paid";
 }
 
-/* Email Fix */
+/* Email */
 window.changeEmail=async()=>{
 let user=auth.currentUser;
-try{
 const cred=EmailAuthProvider.credential(user.email,password.value);
 await reauthenticateWithCredential(user,cred);
 await verifyBeforeUpdateEmail(user,newEmail.value);
-alert("Verification mail sent");
-}catch(e){alert(e.message)}
+alert("Verification sent");
 }
 
 </script>
