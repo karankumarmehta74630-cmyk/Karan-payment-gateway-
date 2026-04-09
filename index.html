@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Karan Payment Dashboard</title>
+<title>Karan Payment</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -11,36 +11,51 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Poppins}
 
-body{display:flex;background:#f1f5f9}
+body{
+display:flex;
+flex-direction:row;
+min-height:100vh;
+background:#f1f5f9;
+}
 
 /* Sidebar */
 .sidebar{
-width:200px;
+width:220px;
 background:#111827;
 color:#fff;
 padding:20px;
-min-height:100vh;
 }
-.sidebar div{margin:10px 0;cursor:pointer}
+
+.sidebar div{
+margin:12px 0;
+cursor:pointer;
+}
 
 /* Content */
-.content{flex:1;padding:20px}
-
-.section{display:none}
-.active{display:block}
+.content{
+flex:1;
+padding:20px;
+}
 
 /* Card */
 .card{
 background:#fff;
 padding:20px;
-border-radius:10px;
+border-radius:12px;
 box-shadow:0 5px 20px rgba(0,0,0,0.1);
-max-width:400px;
+max-width:420px;
+width:100%;
+}
+
+/* Responsive */
+@media(max-width:768px){
+body{flex-direction:column}
+.sidebar{width:100%;display:flex;justify-content:space-around}
 }
 
 /* Profile */
 .profile{display:flex;gap:10px;align-items:center}
-.profile img{width:60px;height:60px;border-radius:50%}
+.profile img{width:50px;height:50px;border-radius:50%}
 
 /* Inputs */
 input{
@@ -63,8 +78,15 @@ border-radius:6px;
 cursor:pointer;
 }
 
+/* QR */
+#qrcode{text-align:center;margin-top:10px}
+
 /* Timer */
 .timer{color:red;margin-top:5px}
+
+/* Section */
+.section{display:none}
+.active{display:block}
 
 /* Loader */
 .loader{
@@ -76,7 +98,6 @@ display:flex;
 justify-content:center;
 align-items:center;
 color:#fff;
-font-size:20px;
 display:none;
 }
 </style>
@@ -84,45 +105,36 @@ display:none;
 
 <body>
 
-<div class="loader" id="loader">Processing...</div>
+<div class="loader" id="loader">Loading...</div>
 
 <!-- Sidebar -->
 <div class="sidebar">
-<h3>Karan</h3>
-<div onclick="show('profile')">Profile</div>
 <div onclick="show('payment')">Payment</div>
 <div onclick="show('history')">History</div>
-<div onclick="show('email')">Change Gmail</div>
+<div onclick="show('profile')">Profile</div>
 <div onclick="logout()">Logout</div>
 </div>
 
 <!-- Content -->
 <div class="content">
 
-<!-- PROFILE -->
-<div id="profile" class="section active">
-<div class="card">
-<h3>Profile</h3>
-<div id="profileBox" class="profile"></div>
-</div>
-</div>
-
 <!-- PAYMENT -->
-<div id="payment" class="section">
+<div id="payment" class="section active">
 <div class="card">
 
 <h3>Payment</h3>
 
 <input id="amount" placeholder="Enter Amount">
 
-<button onclick="generateQR()">Generate QR</button>
+<button onclick="generatePayment()">Generate Payment</button>
 
 <div id="qrcode"></div>
 <p id="orderText"></p>
 <p id="timer" class="timer"></p>
 
 <button onclick="payNow()">Pay Now</button>
-<button onclick="markSuccess()">Payment Success</button>
+
+<button onclick="copyLink()">Copy Payment Link</button>
 
 </div>
 </div>
@@ -130,18 +142,16 @@ display:none;
 <!-- HISTORY -->
 <div id="history" class="section">
 <div class="card">
-<h3>Payment History</h3>
+<h3>History</h3>
 <div id="historyList"></div>
 </div>
 </div>
 
-<!-- EMAIL -->
-<div id="email" class="section">
+<!-- PROFILE -->
+<div id="profile" class="section">
 <div class="card">
-<h3>Change Gmail</h3>
-<input id="newEmail" placeholder="New Email">
-<input id="password" placeholder="Password">
-<button onclick="changeEmail()">Update Email</button>
+<h3>Profile</h3>
+<div id="profileBox" class="profile"></div>
 </div>
 </div>
 
@@ -150,30 +160,31 @@ display:none;
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut, EmailAuthProvider, reauthenticateWithCredential, verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBWfnQ9KFDWA5V9_VfqQdWd-vL-psdcqTA",
-  authDomain: "karanchatapp-e0b1d.firebaseapp.com",
-  projectId: "karanchatapp-e0b1d",
-  appId: "1:992252113506:web:c55091651550918a43173b"
+apiKey:"AIzaSyBWfnQ9KFDWA5V9_VfqQdWd-vL-psdcqTA",
+authDomain:"karanchatapp-e0b1d.firebaseapp.com",
+projectId:"karanchatapp-e0b1d",
+appId:"1:992252113506:web:c55091651550918a43173b"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 let upiLink="", orderId="", timer, time=60;
-
-/* Loader */
-function showLoader(){
-loader.style.display="flex";
-setTimeout(()=>loader.style.display="none",3000);
-}
+let paymentLink="";
 
 /* Section */
-window.show=function(sec){
+window.show=function(id){
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-document.getElementById(sec).classList.add("active");
+document.getElementById(id).classList.add("active");
+}
+
+/* Loader */
+function load3sec(){
+loader.style.display="flex";
+setTimeout(()=>loader.style.display="none",3000);
 }
 
 /* Auth */
@@ -182,26 +193,23 @@ if(!user){window.location="login.html";}
 else{
 profileBox.innerHTML=`
 <img src="${user.photoURL || 'https://i.imgur.com/6VBx3io.png'}">
-<div><b>${user.displayName||"User"}</b><br>${user.email}</div>`;
+<div><b>${user.displayName}</b><br>${user.email}</div>`;
 }
 });
 
-/* Logout */
-window.logout=function(){
-signOut(auth).then(()=>window.location="login.html");
-}
-
-/* QR */
-window.generateQR=function(){
+/* Generate */
+window.generatePayment=function(){
 
 let amt=amount.value;
 if(!amt){alert("Enter amount");return;}
 
-showLoader();
+load3sec();
 
 orderId="ORD"+Date.now();
 
 upiLink=`upi://pay?pa=7463011305@amazonpay&pn=Karan&am=${amt}&cu=INR`;
+
+paymentLink=window.location.origin + window.location.pathname + "?amount="+amt;
 
 qrcode.innerHTML="";
 new QRCode(qrcode,{text:upiLink,width:200,height:200});
@@ -229,63 +237,42 @@ timer.innerText="Expired";
 /* Pay */
 window.payNow=function(){
 if(!upiLink){alert("Generate first");return;}
-showLoader();
 window.location.href=upiLink;
 }
 
-/* Success */
-window.markSuccess=function(){
+/* Copy Link */
+window.copyLink=function(){
+navigator.clipboard.writeText(paymentLink);
+alert("Payment link copied");
+}
 
-let amt=amount.value;
+/* Auto load from link */
+window.onload=function(){
+const url=new URL(window.location.href);
+const amt=url.searchParams.get("amount");
 
-let history=JSON.parse(localStorage.getItem("payHistory"))||[];
+if(amt){
+amount.value=amt;
+generatePayment();
+}
+}
 
-history.push({
-order:orderId,
-amount:amt,
-date:new Date().toLocaleString()
-});
-
-localStorage.setItem("payHistory",JSON.stringify(history));
-
-alert("Payment Marked Successful");
-
-loadHistory();
+/* Logout */
+window.logout=function(){
+signOut(auth).then(()=>window.location="login.html");
 }
 
 /* History */
 function loadHistory(){
-let history=JSON.parse(localStorage.getItem("payHistory"))||[];
+let h=JSON.parse(localStorage.getItem("payHistory"))||[];
 historyList.innerHTML="";
-
-history.reverse().forEach(h=>{
+h.forEach(i=>{
 let div=document.createElement("div");
-div.innerHTML=`<p>₹${h.amount} | ${h.order}</p>`;
+div.innerText="₹"+i.amount+" | "+i.order;
 historyList.appendChild(div);
 });
 }
-
 loadHistory();
-
-/* Email */
-window.changeEmail=async function(){
-
-let user=auth.currentUser;
-
-try{
-showLoader();
-
-const cred=EmailAuthProvider.credential(user.email,password.value);
-
-await reauthenticateWithCredential(user,cred);
-await verifyBeforeUpdateEmail(user,newEmail.value);
-
-alert("Verify new email first");
-
-}catch(e){
-alert(e.message);
-}
-}
 
 </script>
 
