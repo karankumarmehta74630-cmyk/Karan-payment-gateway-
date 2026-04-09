@@ -3,17 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Karan Payment</title>
+<title>Karan Payment Gateway</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Poppins}
 
 body{
 display:flex;
-flex-direction:row;
 min-height:100vh;
 background:#f1f5f9;
 }
@@ -31,11 +32,14 @@ margin:12px 0;
 cursor:pointer;
 }
 
-/* Content */
-.content{
-flex:1;
-padding:20px;
+/* Mobile */
+@media(max-width:768px){
+body{flex-direction:column}
+.sidebar{width:100%;display:flex;justify-content:space-around}
 }
+
+/* Content */
+.content{flex:1;padding:20px}
 
 /* Card */
 .card{
@@ -45,12 +49,6 @@ border-radius:12px;
 box-shadow:0 5px 20px rgba(0,0,0,0.1);
 max-width:420px;
 width:100%;
-}
-
-/* Responsive */
-@media(max-width:768px){
-body{flex-direction:column}
-.sidebar{width:100%;display:flex;justify-content:space-around}
 }
 
 /* Profile */
@@ -78,15 +76,12 @@ border-radius:6px;
 cursor:pointer;
 }
 
-/* QR */
-#qrcode{text-align:center;margin-top:10px}
+/* Sections */
+.section{display:none}
+.active{display:block}
 
 /* Timer */
 .timer{color:red;margin-top:5px}
-
-/* Section */
-.section{display:none}
-.active{display:block}
 
 /* Loader */
 .loader{
@@ -105,7 +100,7 @@ display:none;
 
 <body>
 
-<div class="loader" id="loader">Loading...</div>
+<div class="loader" id="loader">Processing...</div>
 
 <!-- Sidebar -->
 <div class="sidebar">
@@ -133,8 +128,9 @@ display:none;
 <p id="timer" class="timer"></p>
 
 <button onclick="payNow()">Pay Now</button>
-
 <button onclick="copyLink()">Copy Payment Link</button>
+<button onclick="markSuccess()">Payment Success</button>
+<button onclick="downloadReceipt()">Download Receipt</button>
 
 </div>
 </div>
@@ -142,7 +138,7 @@ display:none;
 <!-- HISTORY -->
 <div id="history" class="section">
 <div class="card">
-<h3>History</h3>
+<h3>Payment History</h3>
 <div id="historyList"></div>
 </div>
 </div>
@@ -175,16 +171,16 @@ const auth = getAuth(app);
 let upiLink="", orderId="", timer, time=60;
 let paymentLink="";
 
-/* Section */
-window.show=function(id){
-document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-document.getElementById(id).classList.add("active");
-}
-
 /* Loader */
 function load3sec(){
 loader.style.display="flex";
 setTimeout(()=>loader.style.display="none",3000);
+}
+
+/* Section */
+window.show=function(id){
+document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
 }
 
 /* Auth */
@@ -197,7 +193,7 @@ profileBox.innerHTML=`
 }
 });
 
-/* Generate */
+/* Generate Payment */
 window.generatePayment=function(){
 
 let amt=amount.value;
@@ -207,7 +203,7 @@ load3sec();
 
 orderId="ORD"+Date.now();
 
-upiLink=`upi://pay?pa=7463011305@amazonpay&pn=Karan&am=${amt}&cu=INR`;
+upiLink=`upi://pay?pa=7463011305@amazonpay&pn=Karan%20Payment&am=${amt}&cu=INR`;
 
 paymentLink=window.location.origin + window.location.pathname + "?amount="+amt;
 
@@ -243,14 +239,92 @@ window.location.href=upiLink;
 /* Copy Link */
 window.copyLink=function(){
 navigator.clipboard.writeText(paymentLink);
-alert("Payment link copied");
+alert("Link Copied");
 }
 
-/* Auto load from link */
-window.onload=function(){
-const url=new URL(window.location.href);
-const amt=url.searchParams.get("amount");
+/* Success */
+window.markSuccess=function(){
 
+let history=JSON.parse(localStorage.getItem("payHistory"))||[];
+
+history.push({
+order:orderId,
+amount:amount.value,
+date:new Date().toLocaleString()
+});
+
+localStorage.setItem("payHistory",JSON.stringify(history));
+
+alert("Payment Saved");
+
+loadHistory();
+}
+
+/* History */
+function loadHistory(){
+let h=JSON.parse(localStorage.getItem("payHistory"))||[];
+historyList.innerHTML="";
+h.reverse().forEach(i=>{
+let div=document.createElement("div");
+div.innerText=`₹${i.amount} | ${i.order}`;
+historyList.appendChild(div);
+});
+}
+loadHistory();
+
+/* Receipt with QR */
+window.downloadReceipt=function(){
+
+let user=auth.currentUser;
+if(!user){alert("Login required");return;}
+
+let { jsPDF } = window.jspdf;
+
+let doc=new jsPDF();
+
+let name=user.displayName || "User";
+let email=user.email;
+let amt=amount.value;
+let date=new Date().toLocaleString();
+
+// Title
+doc.setFontSize(18);
+doc.text("Karan Payment Gateway",20,20);
+
+doc.setFontSize(12);
+doc.text("Payment Receipt",20,30);
+doc.line(20,32,190,32);
+
+// Details
+doc.text("Name: "+name,20,45);
+doc.text("Email: "+email,20,55);
+doc.text("Amount: ₹"+amt,20,65);
+doc.text("Order ID: "+orderId,20,75);
+doc.text("Date: "+date,20,85);
+
+doc.text("Status: SUCCESS",20,100);
+
+// QR IMAGE
+let qrCanvas=document.querySelector("#qrcode canvas");
+
+if(qrCanvas){
+let imgData=qrCanvas.toDataURL("image/png");
+doc.addImage(imgData,"PNG",130,40,60,60);
+}
+
+// Footer
+doc.setFontSize(10);
+doc.text("Thank you for using Karan Payment Gateway",20,120);
+
+// Download
+doc.save("Receipt_"+orderId+".pdf");
+
+}
+
+/* Auto amount from link */
+window.onload=function(){
+let url=new URL(window.location.href);
+let amt=url.searchParams.get("amount");
 if(amt){
 amount.value=amt;
 generatePayment();
@@ -261,18 +335,6 @@ generatePayment();
 window.logout=function(){
 signOut(auth).then(()=>window.location="login.html");
 }
-
-/* History */
-function loadHistory(){
-let h=JSON.parse(localStorage.getItem("payHistory"))||[];
-historyList.innerHTML="";
-h.forEach(i=>{
-let div=document.createElement("div");
-div.innerText="₹"+i.amount+" | "+i.order;
-historyList.appendChild(div);
-});
-}
-loadHistory();
 
 </script>
 
