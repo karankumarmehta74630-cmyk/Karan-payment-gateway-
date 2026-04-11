@@ -13,21 +13,28 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Poppins}
 
-/* Background */
 body{
 display:flex;
 min-height:100vh;
-background:linear-gradient(135deg,#1e3a8a,#9333ea);
-color:#fff;
+background:linear-gradient(135deg,#e0e7ff,#f8fafc);
 }
 
 /* Sidebar */
 .sidebar{
 width:220px;
-background:#0f172a;
+background:#111827;
+color:#fff;
 padding:20px;
 }
-.sidebar div{margin:15px 0;cursor:pointer}
+
+.sidebar div{
+margin:12px 0;
+cursor:pointer;
+padding:8px;
+border-radius:6px;
+transition:.3s;
+}
+.sidebar div:hover{background:#2563eb}
 
 /* Mobile */
 @media(max-width:768px){
@@ -36,17 +43,16 @@ body{flex-direction:column}
 }
 
 /* Content */
-.content{flex:1;padding:20px;display:flex;justify-content:center}
+.content{flex:1;padding:20px}
 
 /* Card */
 .card{
-background:#ffffff15;
-backdrop-filter:blur(20px);
+background:#fff;
 padding:20px;
-border-radius:15px;
-max-width:420px;
-width:100%;
-animation:fade .5s ease;
+border-radius:12px;
+box-shadow:0 10px 30px rgba(0,0,0,0.1);
+max-width:420px;width:100%;
+animation:fade .4s ease;
 }
 
 @keyframes fade{
@@ -54,75 +60,65 @@ from{opacity:0;transform:translateY(20px)}
 to{opacity:1;transform:translateY(0)}
 }
 
-/* Input */
+/* Profile */
+.profile{
+display:flex;
+align-items:center;
+gap:10px;
+margin-bottom:10px;
+}
+.profile img{
+width:50px;height:50px;border-radius:50%;
+}
+
+/* Inputs */
 input{
 width:100%;
 padding:12px;
 margin-top:10px;
-border:none;
+border:1px solid #ccc;
 border-radius:8px;
 }
 
-/* Button */
+/* Buttons */
 button{
 width:100%;
 padding:12px;
 margin-top:10px;
 border:none;
-border-radius:8px;
-background:#6366f1;
+background:#2563eb;
 color:#fff;
+border-radius:8px;
 cursor:pointer;
-transition:.3s;
 }
-button:hover{transform:scale(1.05)}
 
 /* Loader */
 .loader{
 position:fixed;
-top:0;left:0;
-width:100%;height:100%;
-background:#000c;
+top:0;left:0;width:100%;height:100%;
+background:#000a;
 display:flex;
 justify-content:center;
 align-items:center;
-flex-direction:column;
+color:#fff;
 display:none;
 }
 
-/* Logo Loader */
-.loader img{
-width:80px;
-animation:spin 2s linear infinite;
-}
-
-@keyframes spin{
-0%{transform:rotate(0)}
-100%{transform:rotate(360deg)}
-}
-
-/* Sections */
 .section{display:none}
 .active{display:block}
 
-.timer{color:#ff4d4d;margin-top:5px}
+.timer{color:red;margin-top:5px}
 </style>
 </head>
 
 <body>
 
-<!-- LOADER -->
-<div class="loader" id="loader">
-<img src="https://cdn-icons-png.flaticon.com/512/891/891419.png">
-<p>Karan Payment Gateway</p>
-</div>
+<div class="loader" id="loader">Loading...</div>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
 <div onclick="show('payment')">Payment</div>
 <div onclick="show('history')">History</div>
 <div onclick="show('profile')">Profile</div>
-<div onclick="show('email')">Change Gmail</div>
 <div onclick="logout()">Logout</div>
 </div>
 
@@ -134,31 +130,24 @@ animation:spin 2s linear infinite;
 
 <h3>Karan Payment Gateway</h3>
 
-<div id="profileBox"></div>
+<div id="profileBox" class="profile"></div>
 
 <input id="amount" placeholder="Enter Amount">
 
-<button onclick="generatePayment()">Generate Payment</button>
+<button onclick="generate()">Generate QR</button>
 
 <div id="qrcode"></div>
 <p id="orderText"></p>
 <p id="timer" class="timer"></p>
 
-<button onclick="payNow()">Pay Now</button>
+<button onclick="pay()">Pay Now</button>
+<button onclick="copyLink()">Copy Payment Link</button>
 
 <input id="utr" placeholder="Enter UTR">
-<button onclick="verifyUTR()">Verify Payment</button>
+<button onclick="verify()">Verify Payment</button>
 
 <button onclick="downloadReceipt()">Download Receipt</button>
 
-</div>
-</div>
-
-<!-- HISTORY -->
-<div id="history" class="section">
-<div class="card">
-<h3>History</h3>
-<div id="historyList"></div>
 </div>
 </div>
 
@@ -170,13 +159,11 @@ animation:spin 2s linear infinite;
 </div>
 </div>
 
-<!-- EMAIL -->
-<div id="email" class="section">
+<!-- HISTORY -->
+<div id="history" class="section">
 <div class="card">
-<h3>Change Gmail</h3>
-<input id="newEmail" placeholder="New Email">
-<input id="password" placeholder="Password">
-<button onclick="changeEmail()">Update</button>
+<h3>History</h3>
+<div id="historyList"></div>
 </div>
 </div>
 
@@ -185,44 +172,146 @@ animation:spin 2s linear infinite;
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut, EmailAuthProvider, reauthenticateWithCredential, verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const firebaseConfig = {
+const firebaseConfig={
 apiKey:"AIzaSyBWfnQ9KFDWA5V9_VfqQdWd-vL-psdcqTA",
 authDomain:"karanchatapp-e0b1d.firebaseapp.com",
 projectId:"karanchatapp-e0b1d",
 appId:"1:992252113506:web:c55091651550918a43173b"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
 
-let isGuest=false, used=false, verified=false;
-let upiLink="", orderId="", timer;
+let currentUser=null;
+let upiLink="", orderId="", timer, time=60;
+let paymentLink="";
+let isGuest=false;
 
-/* Loader random */
-function showLoader(){
+/* Loader */
+function load(){
 loader.style.display="flex";
-let delay=Math.random()*2000+1000;
-setTimeout(()=>loader.style.display="none",delay);
+setTimeout(()=>loader.style.display="none",3000);
 }
 
 /* Auth */
 onAuthStateChanged(auth,user=>{
+
+currentUser=user;
+
 let url=new URL(window.location.href);
 let amt=url.searchParams.get("amount");
 
-if(!user && amt){isGuest=true;}
-else if(!user){window.location="login.html";return;}
+if(!user && amt){
+isGuest=true;
+}else if(!user){
+window.location="login.html";
+return;
+}
 
-let name=url.searchParams.get("name") || user?.displayName || "Guest";
-let email=url.searchParams.get("email") || user?.email || "";
+let name=user?.displayName || url.searchParams.get("name") || "Guest";
+let email=user?.email || url.searchParams.get("email") || "";
 
-profileBox.innerHTML=`<b>${name}</b><br>${email}`;
+let dp=user?.photoURL || "https://i.imgur.com/6VBx3io.png";
+
+profileBox.innerHTML=`
+<img src="${dp}">
+<div><b>${name}</b><br>${email}</div>
+`;
+
 profileFull.innerHTML=profileBox.innerHTML;
+
 });
 
-/* Section */
+/* Generate */
+window.generate=function(){
+
+let amt=amount.value;
+if(!amt){alert("Enter amount");return;}
+
+load();
+
+orderId="ORD"+Date.now();
+
+upiLink=`upi://pay?pa=7463011305@amazonpay&pn=Karan&am=${amt}&cu=INR`;
+
+paymentLink=location.origin+location.pathname+
+`?amount=${amt}&name=${encodeURIComponent(currentUser?.displayName||"User")}&email=${encodeURIComponent(currentUser?.email||"")}`;
+
+qrcode.innerHTML="";
+new QRCode(qrcode,{text:upiLink,width:220,height:220});
+
+orderText.innerText="Order: "+orderId;
+
+startTimer();
+}
+
+/* Timer */
+function startTimer(){
+time=60;
+clearInterval(timer);
+
+timer=setInterval(()=>{
+time--;
+timer.innerText="Expires in "+time+" sec";
+if(time<=0){
+clearInterval(timer);
+timer.innerText="Expired";
+}
+},1000);
+}
+
+/* Pay */
+window.pay=function(){
+window.location.href=upiLink;
+}
+
+/* Copy */
+window.copyLink=function(){
+
+if(isGuest){
+alert("Login required");
+window.location="login.html";
+return;
+}
+
+navigator.clipboard.writeText(paymentLink);
+alert("Link Copied");
+}
+
+/* Verify */
+window.verify=function(){
+if(utr.value.length<6){
+alert("Invalid UTR");
+return;
+}
+alert("Payment Verified");
+}
+
+/* Receipt */
+window.downloadReceipt=function(){
+
+let { jsPDF }=window.jspdf;
+let doc=new jsPDF();
+
+doc.text("Karan Payment Gateway",20,20);
+doc.text("Receipt",20,30);
+
+doc.text("Name: "+(currentUser?.displayName||"User"),20,45);
+doc.text("Email: "+(currentUser?.email||""),20,55);
+doc.text("Amount: ₹"+amount.value,20,65);
+doc.text("UTR: "+utr.value,20,75);
+
+let canvas=document.querySelector("#qrcode canvas");
+if(canvas){
+doc.addImage(canvas.toDataURL(),"PNG",130,40,60,60);
+}
+
+doc.save("receipt.pdf");
+}
+
+/* Sections */
 window.show=function(id){
 if(isGuest && id!=="payment"){
 window.location="login.html";
@@ -232,90 +321,28 @@ document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
 document.getElementById(id).classList.add("active");
 }
 
-/* Generate */
-window.generatePayment=function(){
-
-if(used){alert("Already used");return;}
-
-let amt=amount.value;
-if(!amt){alert("Enter amount");return;}
-
-showLoader();
-
-orderId="ORD"+Date.now();
-
-upiLink=`upi://pay?pa=7463011305@amazonpay&pn=Karan&am=${amt}&cu=INR`;
-
-qrcode.innerHTML="";
-new QRCode(qrcode,{text:upiLink,width:200,height:200});
-
-orderText.innerText="Order: "+orderId;
-
-let t=60;
-timer=setInterval(()=>{
-t--;
-timer.innerText="Expires in "+t+" sec";
-if(t<=0){clearInterval(timer);alert("Expired");location.reload();}
-},1000);
-}
-
-/* Pay */
-window.payNow=function(){
-window.location.href=upiLink;
-}
-
-/* Verify */
-window.verifyUTR=function(){
-if(utr.value.length<6){alert("Invalid");return;}
-verified=true;
-used=true;
-alert("Verified");
-}
-
-/* Receipt */
-window.downloadReceipt=function(){
-
-if(!verified){alert("Verify first");return;}
-
-let { jsPDF } = window.jspdf;
-let doc=new jsPDF();
-
-doc.text("Karan Payment Gateway",20,20);
-doc.text("Amount: ₹"+amount.value,20,40);
-doc.text("UTR: "+utr.value,20,50);
-
-let canvas=document.querySelector("#qrcode canvas");
-if(canvas){
-doc.addImage(canvas.toDataURL(),"PNG",130,30,60,60);
-}
-
-doc.save("receipt.pdf");
-}
-
-/* Email change */
-window.changeEmail=async function(){
-
-let user=auth.currentUser;
-
-try{
-const cred=EmailAuthProvider.credential(user.email,password.value);
-await reauthenticateWithCredential(user,cred);
-await verifyBeforeUpdateEmail(user,newEmail.value);
-alert("Verify email first");
-}catch(e){alert(e.message);}
-}
-
 /* History */
 function loadHistory(){
-let h=JSON.parse(localStorage.getItem("payHistory"))||[];
+let h=JSON.parse(localStorage.getItem("hist"))||[];
 historyList.innerHTML="";
 h.forEach(i=>{
 let d=document.createElement("div");
-d.innerText=i.amount;
+d.innerText=i;
 historyList.appendChild(d);
 });
 }
 loadHistory();
+
+/* Auto */
+window.onload=function(){
+let url=new URL(location.href);
+let amt=url.searchParams.get("amount");
+
+if(amt){
+amount.value=amt;
+generate();
+}
+}
 
 /* Logout */
 window.logout=function(){
@@ -323,5 +350,6 @@ signOut(auth).then(()=>location="login.html");
 }
 
 </script>
+
 </body>
 </html>
