@@ -12,61 +12,19 @@
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Poppins}
-
 body{display:flex;min-height:100vh;background:#f1f5f9}
-
 .sidebar{width:220px;background:#111827;color:#fff;padding:20px}
 .sidebar div{margin:12px 0;cursor:pointer}
-
-@media(max-width:768px){
-body{flex-direction:column}
-.sidebar{width:100%;display:flex;justify-content:space-around}
-}
-
 .content{flex:1;padding:20px}
-
-.card{
-background:#fff;
-padding:20px;
-border-radius:12px;
-box-shadow:0 5px 20px rgba(0,0,0,0.1);
-max-width:420px;width:100%;
-}
-
+.card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 5px 20px rgba(0,0,0,0.1);max-width:420px;width:100%}
 .profile{display:flex;gap:10px;align-items:center}
 .profile img{width:50px;height:50px;border-radius:50%}
-
-input{
-width:100%;
-padding:10px;
-margin-top:10px;
-border:1px solid #ccc;
-border-radius:6px;
-}
-
-button{
-width:100%;
-padding:10px;
-margin-top:10px;
-border:none;
-background:#2563eb;
-color:#fff;
-border-radius:6px;
-cursor:pointer;
-}
-
+input{width:100%;padding:10px;margin-top:10px;border:1px solid #ccc;border-radius:6px}
+button{width:100%;padding:10px;margin-top:10px;border:none;background:#2563eb;color:#fff;border-radius:6px;cursor:pointer}
 .section{display:none}
 .active{display:block}
-
 .timer{color:red;margin-top:5px}
-
-.loader{
-position:fixed;
-top:0;left:0;width:100%;height:100%;
-background:#000a;
-display:flex;justify-content:center;align-items:center;
-color:#fff;display:none;
-}
+.loader{position:fixed;top:0;left:0;width:100%;height:100%;background:#000a;display:flex;justify-content:center;align-items:center;color:#fff;display:none}
 </style>
 </head>
 
@@ -76,14 +34,12 @@ color:#fff;display:none;
 
 <div class="sidebar">
 <div onclick="show('payment')">Payment</div>
-<div onclick="show('history')">History</div>
 <div onclick="show('profile')">Profile</div>
 <div onclick="logout()">Logout</div>
 </div>
 
 <div class="content">
 
-<!-- PAYMENT -->
 <div id="payment" class="section active">
 <div class="card">
 
@@ -100,22 +56,16 @@ color:#fff;display:none;
 <p id="timer" class="timer"></p>
 
 <button onclick="payNow()">Pay Now</button>
-<button onclick="copyLink()">Copy Payment Link</button>
-<button onclick="markSuccess()">Payment Success</button>
+
+<input id="utr" placeholder="Enter UTR Number">
+
+<button onclick="verifyUTR()">Verify Payment</button>
+
 <button onclick="downloadReceipt()">Download Receipt</button>
 
 </div>
 </div>
 
-<!-- HISTORY -->
-<div id="history" class="section">
-<div class="card">
-<h3>Payment History</h3>
-<div id="historyList"></div>
-</div>
-</div>
-
-<!-- PROFILE -->
 <div id="profile" class="section">
 <div class="card">
 <h3>Profile</h3>
@@ -140,8 +90,10 @@ appId:"1:992252113506:web:c55091651550918a43173b"
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-let upiLink="", orderId="", timer, time=60, paymentLink="";
-let currentUser=null;
+let upiLink="", orderId="", timer, time=60;
+let isGuest=false;
+let used=false;
+let verified=false;
 
 /* Loader */
 function load3sec(){
@@ -151,39 +103,42 @@ setTimeout(()=>loader.style.display="none",3000);
 
 /* Section */
 window.show=function(id){
+if(isGuest && id!=="payment"){
+window.location="login.html";
+return;
+}
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
 document.getElementById(id).classList.add("active");
 }
 
-/* Auth + Guest Mode */
+/* Auth + Guest */
 onAuthStateChanged(auth,user=>{
 
-currentUser=user;
-
 let url=new URL(window.location.href);
-let name=url.searchParams.get("name");
-let email=url.searchParams.get("email");
+let amt=url.searchParams.get("amount");
 
-if(user){
-name=user.displayName;
-email=user.email;
-}
-
-if(!user && !url.searchParams.get("amount")){
+if(!user && amt){
+isGuest=true;
+}else if(!user){
 window.location="login.html";
 return;
 }
 
-profileBox.innerHTML=`
-<img src="${user?.photoURL || 'https://i.imgur.com/6VBx3io.png'}">
-<div><b>${name || "Guest"}</b><br>${email || ""}</div>`;
+let name=url.searchParams.get("name") || user?.displayName || "Guest";
+let email=url.searchParams.get("email") || user?.email || "";
 
+profileBox.innerHTML=`<div><b>${name}</b><br>${email}</div>`;
 profileFull.innerHTML=profileBox.innerHTML;
 
 });
 
-/* Generate Payment */
+/* Generate */
 window.generatePayment=function(){
+
+if(used){
+alert("This link already used");
+return;
+}
 
 let amt=amount.value;
 if(!amt){alert("Enter amount");return;}
@@ -192,13 +147,7 @@ load3sec();
 
 orderId="ORD"+Date.now();
 
-let name=currentUser?.displayName || "Guest";
-let email=currentUser?.email || "guest@email.com";
-
 upiLink=`upi://pay?pa=7463011305@amazonpay&pn=Karan&am=${amt}&cu=INR`;
-
-paymentLink=window.location.origin+window.location.pathname+
-`?amount=${amt}&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`;
 
 qrcode.innerHTML="";
 new QRCode(qrcode,{text:upiLink,width:200,height:200});
@@ -216,67 +165,51 @@ clearInterval(timer);
 timer=setInterval(()=>{
 time--;
 timer.innerText="Expires in "+time+" sec";
+
 if(time<=0){
 clearInterval(timer);
-timer.innerText="Expired";
+alert("Link expired");
+location.reload();
 }
 },1000);
 }
 
 /* Pay */
 window.payNow=function(){
-if(!upiLink){alert("Generate first");return;}
 window.location.href=upiLink;
 }
 
-/* Copy */
-window.copyLink=function(){
-navigator.clipboard.writeText(paymentLink);
-alert("Link Copied");
+/* Verify UTR */
+window.verifyUTR=function(){
+
+let val=utr.value;
+
+if(!val || val.length<6){
+alert("Invalid UTR");
+return;
 }
 
-/* Success */
-window.markSuccess=function(){
-if(!currentUser) return;
+verified=true;
+used=true;
 
-let history=JSON.parse(localStorage.getItem("payHistory"))||[];
-
-history.push({
-order:orderId,
-amount:amount.value,
-date:new Date().toLocaleString()
-});
-
-localStorage.setItem("payHistory",JSON.stringify(history));
-
-loadHistory();
-alert("Saved");
+alert("Payment Verified");
 }
-
-/* History */
-function loadHistory(){
-let h=JSON.parse(localStorage.getItem("payHistory"))||[];
-historyList.innerHTML="";
-h.reverse().forEach(i=>{
-let div=document.createElement("div");
-div.innerText=`₹${i.amount} | ${i.order}`;
-historyList.appendChild(div);
-});
-}
-loadHistory();
 
 /* Receipt */
 window.downloadReceipt=function(){
 
-let url=new URL(window.location.href);
-
-let senderName=url.searchParams.get("name") || currentUser?.displayName || "User";
-let senderEmail=url.searchParams.get("email") || currentUser?.email || "";
-
-let amt=amount.value;
+if(!verified){
+alert("Verify payment first");
+return;
+}
 
 let { jsPDF } = window.jspdf;
 let doc=new jsPDF();
+
+let url=new URL(window.location.href);
+
+let name=url.searchParams.get("name") || "User";
+let email=url.searchParams.get("email") || "";
 
 doc.setFontSize(18);
 doc.text("Karan Payment Gateway",20,20);
@@ -285,28 +218,26 @@ doc.setFontSize(12);
 doc.text("Payment Receipt",20,30);
 doc.line(20,32,190,32);
 
-doc.text("Name: "+senderName,20,45);
-doc.text("Email: "+senderEmail,20,55);
-doc.text("Amount: ₹"+amt,20,65);
+doc.text("Name: "+name,20,45);
+doc.text("Email: "+email,20,55);
+doc.text("Amount: ₹"+amount.value,20,65);
 doc.text("Order ID: "+orderId,20,75);
-doc.text("Date: "+new Date().toLocaleString(),20,85);
+doc.text("UTR: "+utr.value,20,85);
+doc.text("Date: "+new Date().toLocaleString(),20,95);
 
-doc.text("Status: SUCCESS",20,100);
+doc.text("Status: SUCCESS",20,110);
 
-// QR add
 let canvas=document.querySelector("#qrcode canvas");
 if(canvas){
-let img=canvas.toDataURL("image/png");
+let img=canvas.toDataURL();
 doc.addImage(img,"PNG",130,40,60,60);
 }
 
 doc.save("Receipt_"+orderId+".pdf");
-
 }
 
-/* Auto load from link */
+/* Auto load */
 window.onload=function(){
-
 let url=new URL(window.location.href);
 let amt=url.searchParams.get("amount");
 
@@ -314,7 +245,6 @@ if(amt){
 amount.value=amt;
 generatePayment();
 }
-
 }
 
 /* Logout */
@@ -323,5 +253,6 @@ signOut(auth).then(()=>window.location="login.html");
 }
 
 </script>
+
 </body>
 </html>
