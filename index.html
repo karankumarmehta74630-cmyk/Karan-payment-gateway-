@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Karan Payment Gateway</title>
+<title>Karan Payment Pro</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
@@ -13,7 +13,23 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Poppins}
 
+/* Topbar */
+.topbar{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+background:#111827;
+color:#fff;
+display:flex;
+justify-content:space-between;
+padding:8px 15px;
+font-size:13px;
+z-index:1000;
+}
+
 body{
+padding-top:45px;
 display:flex;
 min-height:100vh;
 background:linear-gradient(135deg,#e0e7ff,#f8fafc);
@@ -26,13 +42,11 @@ background:#111827;
 color:#fff;
 padding:20px;
 }
-
 .sidebar div{
 margin:12px 0;
 cursor:pointer;
 padding:8px;
 border-radius:6px;
-transition:.3s;
 }
 .sidebar div:hover{background:#2563eb}
 
@@ -92,29 +106,54 @@ border-radius:8px;
 cursor:pointer;
 }
 
+.timer{color:red;margin-top:5px}
+
 /* Loader */
 .loader{
 position:fixed;
 top:0;left:0;width:100%;height:100%;
-background:#000a;
+background:#111827;
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:9999;
+}
+.logo-load{
+width:80px;height:80px;
+border-radius:50%;
+background:linear-gradient(135deg,#2563eb,#9333ea);
 display:flex;
 justify-content:center;
 align-items:center;
 color:#fff;
-display:none;
+font-size:28px;
+font-weight:700;
+animation:spin 1s linear infinite;
+}
+@keyframes spin{
+0%{transform:rotate(0)}
+100%{transform:rotate(360deg)}
 }
 
 .section{display:none}
 .active{display:block}
-
-.timer{color:red;margin-top:5px}
 </style>
 </head>
 
 <body>
 
-<div class="loader" id="loader">Loading...</div>
+<!-- Top Bar -->
+<div class="topbar">
+<div id="datetime"></div>
+<div id="battery">🔋 --%</div>
+</div>
 
+<!-- Loader -->
+<div class="loader" id="loader">
+<div class="logo-load">KP</div>
+</div>
+
+<!-- Sidebar -->
 <div class="sidebar">
 <div onclick="show('payment')">Payment</div>
 <div onclick="show('history')">History</div>
@@ -124,7 +163,6 @@ display:none;
 
 <div class="content">
 
-<!-- PAYMENT -->
 <div id="payment" class="section active">
 <div class="card">
 
@@ -132,7 +170,7 @@ display:none;
 
 <div id="profileBox" class="profile"></div>
 
-<input id="amount" placeholder="Enter Amount">
+<input id="amount" placeholder="Enter Amount ₹">
 
 <button onclick="generate()">Generate QR</button>
 
@@ -146,12 +184,11 @@ display:none;
 <input id="utr" placeholder="Enter UTR">
 <button onclick="verify()">Verify Payment</button>
 
-<button onclick="downloadReceipt()">Download Receipt</button>
+<button onclick="receipt()">Download Receipt</button>
 
 </div>
 </div>
 
-<!-- PROFILE -->
 <div id="profile" class="section">
 <div class="card">
 <h3>Profile</h3>
@@ -159,7 +196,6 @@ display:none;
 </div>
 </div>
 
-<!-- HISTORY -->
 <div id="history" class="section">
 <div class="card">
 <h3>History</h3>
@@ -177,60 +213,61 @@ import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/fi
 const firebaseConfig={
 apiKey:"AIzaSyBWfnQ9KFDWA5V9_VfqQdWd-vL-psdcqTA",
 authDomain:"karanchatapp-e0b1d.firebaseapp.com",
-projectId:"karanchatapp-e0b1d",
-appId:"1:992252113506:web:c55091651550918a43173b"
+projectId:"karanchatapp-e0b1d"
 };
 
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 
-let currentUser=null;
+let currentUser=null, isGuest=false;
 let upiLink="", orderId="", timer, time=60;
 let paymentLink="";
-let isGuest=false;
+
+/* Time */
+setInterval(()=>{
+let now=new Date();
+datetime.innerText=now.toLocaleDateString()+" | "+now.toLocaleTimeString();
+},1000);
+
+/* Battery */
+navigator.getBattery?.().then(b=>{
+function upd(){
+battery.innerText="🔋 "+Math.round(b.level*100)+"%";
+}
+upd();
+b.addEventListener("levelchange",upd);
+});
 
 /* Loader */
-function load(){
-loader.style.display="flex";
 setTimeout(()=>loader.style.display="none",3000);
-}
 
 /* Auth */
 onAuthStateChanged(auth,user=>{
-
 currentUser=user;
 
-let url=new URL(window.location.href);
+let url=new URL(location.href);
 let amt=url.searchParams.get("amount");
 
 if(!user && amt){
 isGuest=true;
 }else if(!user){
-window.location="login.html";
+location="login.html";
 return;
 }
 
-let name=user?.displayName || url.searchParams.get("name") || "Guest";
-let email=user?.email || url.searchParams.get("email") || "";
+let name=user?.displayName||url.searchParams.get("name")||"Guest";
+let email=user?.email||url.searchParams.get("email")||"";
 
-let dp=user?.photoURL || "https://i.imgur.com/6VBx3io.png";
+let dp=user?.photoURL||"https://i.imgur.com/6VBx3io.png";
 
-profileBox.innerHTML=`
-<img src="${dp}">
-<div><b>${name}</b><br>${email}</div>
-`;
-
+profileBox.innerHTML=`<img src="${dp}"><div><b>${name}</b><br>${email}</div>`;
 profileFull.innerHTML=profileBox.innerHTML;
-
 });
 
 /* Generate */
 window.generate=function(){
-
 let amt=amount.value;
-if(!amt){alert("Enter amount");return;}
-
-load();
+if(!amt)return alert("Enter amount");
 
 orderId="ORD"+Date.now();
 
@@ -251,48 +288,36 @@ startTimer();
 function startTimer(){
 time=60;
 clearInterval(timer);
-
 timer=setInterval(()=>{
 time--;
 timer.innerText="Expires in "+time+" sec";
-if(time<=0){
-clearInterval(timer);
-timer.innerText="Expired";
-}
+if(time<=0) clearInterval(timer);
 },1000);
 }
 
 /* Pay */
-window.pay=function(){
-window.location.href=upiLink;
-}
+window.pay=()=>location.href=upiLink;
 
 /* Copy */
 window.copyLink=function(){
-
 if(isGuest){
 alert("Login required");
-window.location="login.html";
+location="login.html";
 return;
 }
-
 navigator.clipboard.writeText(paymentLink);
 alert("Link Copied");
 }
 
 /* Verify */
 window.verify=function(){
-if(utr.value.length<6){
-alert("Invalid UTR");
-return;
-}
-alert("Payment Verified");
+if(utr.value.length<6)return alert("Invalid UTR");
+alert("Verified");
 }
 
 /* Receipt */
-window.downloadReceipt=function(){
-
-let { jsPDF }=window.jspdf;
+window.receipt=function(){
+let {jsPDF}=window.jspdf;
 let doc=new jsPDF();
 
 doc.text("Karan Payment Gateway",20,20);
@@ -304,9 +329,7 @@ doc.text("Amount: ₹"+amount.value,20,65);
 doc.text("UTR: "+utr.value,20,75);
 
 let canvas=document.querySelector("#qrcode canvas");
-if(canvas){
-doc.addImage(canvas.toDataURL(),"PNG",130,40,60,60);
-}
+if(canvas) doc.addImage(canvas.toDataURL(),"PNG",130,40,60,60);
 
 doc.save("receipt.pdf");
 }
@@ -314,42 +337,26 @@ doc.save("receipt.pdf");
 /* Sections */
 window.show=function(id){
 if(isGuest && id!=="payment"){
-window.location="login.html";
+location="login.html";
 return;
 }
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
 document.getElementById(id).classList.add("active");
 }
 
-/* History */
-function loadHistory(){
-let h=JSON.parse(localStorage.getItem("hist"))||[];
-historyList.innerHTML="";
-h.forEach(i=>{
-let d=document.createElement("div");
-d.innerText=i;
-historyList.appendChild(d);
-});
-}
-loadHistory();
+/* Logout */
+window.logout=()=>signOut(auth).then(()=>location="login.html");
 
 /* Auto */
 window.onload=function(){
 let url=new URL(location.href);
 let amt=url.searchParams.get("amount");
-
 if(amt){
 amount.value=amt;
 generate();
 }
 }
 
-/* Logout */
-window.logout=function(){
-signOut(auth).then(()=>location="login.html");
-}
-
 </script>
-
 </body>
 </html>
