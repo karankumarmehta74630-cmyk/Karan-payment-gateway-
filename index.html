@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Karan Payment Pro</title>
+<title>Karan Payment Ultimate</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
@@ -16,16 +16,10 @@
 /* Topbar */
 .topbar{
 position:fixed;
-top:0;
-left:0;
-width:100%;
-background:#111827;
-color:#fff;
-display:flex;
-justify-content:space-between;
-padding:8px 15px;
-font-size:13px;
-z-index:1000;
+top:0;left:0;width:100%;
+background:#111827;color:#fff;
+display:flex;justify-content:space-between;
+padding:8px 15px;font-size:13px;z-index:1000;
 }
 
 body{
@@ -37,16 +31,10 @@ background:linear-gradient(135deg,#e0e7ff,#f8fafc);
 
 /* Sidebar */
 .sidebar{
-width:220px;
-background:#111827;
-color:#fff;
-padding:20px;
+width:230px;background:#111827;color:#fff;padding:20px;
 }
 .sidebar div{
-margin:12px 0;
-cursor:pointer;
-padding:8px;
-border-radius:6px;
+margin:12px 0;padding:8px;border-radius:6px;cursor:pointer;
 }
 .sidebar div:hover{background:#2563eb}
 
@@ -61,108 +49,74 @@ body{flex-direction:column}
 
 /* Card */
 .card{
-background:#fff;
-padding:20px;
-border-radius:12px;
+background:#fff;padding:20px;border-radius:12px;
 box-shadow:0 10px 30px rgba(0,0,0,0.1);
 max-width:420px;width:100%;
-animation:fade .4s ease;
-}
-
-@keyframes fade{
-from{opacity:0;transform:translateY(20px)}
-to{opacity:1;transform:translateY(0)}
+margin-bottom:15px;
 }
 
 /* Profile */
-.profile{
-display:flex;
-align-items:center;
-gap:10px;
-margin-bottom:10px;
-}
-.profile img{
-width:50px;height:50px;border-radius:50%;
-}
+.profile{display:flex;align-items:center;gap:10px}
+.profile img{width:50px;height:50px;border-radius:50%}
 
 /* Inputs */
 input{
-width:100%;
-padding:12px;
-margin-top:10px;
-border:1px solid #ccc;
-border-radius:8px;
+width:100%;padding:12px;margin-top:10px;
+border:1px solid #ccc;border-radius:8px;
 }
 
 /* Buttons */
 button{
-width:100%;
-padding:12px;
-margin-top:10px;
-border:none;
-background:#2563eb;
-color:#fff;
-border-radius:8px;
-cursor:pointer;
-}
-
-.timer{color:red;margin-top:5px}
-
-/* Loader */
-.loader{
-position:fixed;
-top:0;left:0;width:100%;height:100%;
-background:#111827;
-display:flex;
-justify-content:center;
-align-items:center;
-z-index:9999;
-}
-.logo-load{
-width:80px;height:80px;
-border-radius:50%;
-background:linear-gradient(135deg,#2563eb,#9333ea);
-display:flex;
-justify-content:center;
-align-items:center;
-color:#fff;
-font-size:28px;
-font-weight:700;
-animation:spin 1s linear infinite;
-}
-@keyframes spin{
-0%{transform:rotate(0)}
-100%{transform:rotate(360deg)}
+width:100%;padding:12px;margin-top:10px;
+border:none;background:#2563eb;color:#fff;
+border-radius:8px;cursor:pointer;
 }
 
 .section{display:none}
 .active{display:block}
+.timer{color:red}
+
+/* Loader */
+.loader{
+position:fixed;top:0;left:0;width:100%;height:100%;
+background:#111827;display:flex;justify-content:center;
+align-items:center;z-index:9999;
+}
+.logo-load{
+width:80px;height:80px;border-radius:50%;
+background:linear-gradient(135deg,#2563eb,#9333ea);
+display:flex;justify-content:center;align-items:center;
+color:#fff;font-size:28px;font-weight:700;
+animation:spin 1s linear infinite;
+}
+@keyframes spin{
+0%{transform:rotate(0)}100%{transform:rotate(360deg)}
+}
 </style>
 </head>
 
 <body>
 
-<!-- Top Bar -->
 <div class="topbar">
 <div id="datetime"></div>
 <div id="battery">🔋 --%</div>
 </div>
 
-<!-- Loader -->
 <div class="loader" id="loader">
 <div class="logo-load">KP</div>
 </div>
 
-<!-- Sidebar -->
 <div class="sidebar">
 <div onclick="show('payment')">Payment</div>
-<div onclick="show('history')">History</div>
 <div onclick="show('profile')">Profile</div>
+<div onclick="show('settings')">Settings</div>
+<div onclick="show('history')">History</div>
 <div onclick="logout()">Logout</div>
 </div>
 
 <div class="content">
 
+<!-- PAYMENT -->
 <div id="payment" class="section active">
 <div class="card">
 
@@ -170,7 +124,7 @@ animation:spin 1s linear infinite;
 
 <div id="profileBox" class="profile"></div>
 
-<input id="amount" placeholder="Enter Amount ₹">
+<input id="amount" placeholder="Enter Amount">
 
 <button onclick="generate()">Generate QR</button>
 
@@ -179,23 +133,50 @@ animation:spin 1s linear infinite;
 <p id="timer" class="timer"></p>
 
 <button onclick="pay()">Pay Now</button>
-<button onclick="copyLink()">Copy Payment Link</button>
+<button onclick="copyLink()">Copy Link</button>
 
 <input id="utr" placeholder="Enter UTR">
 <button onclick="verify()">Verify Payment</button>
 
-<button onclick="receipt()">Download Receipt</button>
+<button onclick="downloadPDF()">Download Receipt</button>
+<button onclick="shareWA()">Share WhatsApp</button>
 
 </div>
 </div>
 
+<!-- PROFILE -->
 <div id="profile" class="section">
 <div class="card">
+
 <h3>Profile</h3>
+
 <div id="profileFull"></div>
+
+<input type="file" id="profileUpload">
+<button onclick="saveProfile()">Upload DP</button>
+
+<input id="newEmail" placeholder="New Email">
+<input id="pass" placeholder="Password">
+<button onclick="changeEmail()">Change Email</button>
+
 </div>
 </div>
 
+<!-- SETTINGS -->
+<div id="settings" class="section">
+<div class="card">
+
+<h3>Settings</h3>
+
+<input id="upiInput" placeholder="Update UPI ID">
+<button onclick="saveUPI()">Save UPI</button>
+
+<button onclick="goLogin()">Login Page</button>
+
+</div>
+</div>
+
+<!-- HISTORY -->
 <div id="history" class="section">
 <div class="card">
 <h3>History</h3>
@@ -207,35 +188,29 @@ animation:spin 1s linear infinite;
 
 <script type="module">
 
+/* Firebase */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut, updateEmail, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const firebaseConfig={
+const app=initializeApp({
 apiKey:"AIzaSyBWfnQ9KFDWA5V9_VfqQdWd-vL-psdcqTA",
-authDomain:"karanchatapp-e0b1d.firebaseapp.com",
-projectId:"karanchatapp-e0b1d"
-};
-
-const app=initializeApp(firebaseConfig);
+authDomain:"karanchatapp-e0b1d.firebaseapp.com"
+});
 const auth=getAuth(app);
 
-let currentUser=null, isGuest=false;
+let userObj=null;
 let upiLink="", orderId="", timer, time=60;
-let paymentLink="";
 
 /* Time */
 setInterval(()=>{
-let now=new Date();
-datetime.innerText=now.toLocaleDateString()+" | "+now.toLocaleTimeString();
+let n=new Date();
+datetime.innerText=n.toLocaleDateString()+" | "+n.toLocaleTimeString();
 },1000);
 
 /* Battery */
 navigator.getBattery?.().then(b=>{
-function upd(){
-battery.innerText="🔋 "+Math.round(b.level*100)+"%";
-}
-upd();
-b.addEventListener("levelchange",upd);
+function u(){battery.innerText="🔋 "+Math.round(b.level*100)+"%"}
+u();b.addEventListener("levelchange",u);
 });
 
 /* Loader */
@@ -243,25 +218,14 @@ setTimeout(()=>loader.style.display="none",3000);
 
 /* Auth */
 onAuthStateChanged(auth,user=>{
-currentUser=user;
+if(!user){location="login.html";return;}
+userObj=user;
 
-let url=new URL(location.href);
-let amt=url.searchParams.get("amount");
+let dp=user.photoURL||localStorage.getItem("dp")||"https://i.imgur.com/6VBx3io.png";
 
-if(!user && amt){
-isGuest=true;
-}else if(!user){
-location="login.html";
-return;
-}
-
-let name=user?.displayName||url.searchParams.get("name")||"Guest";
-let email=user?.email||url.searchParams.get("email")||"";
-
-let dp=user?.photoURL||"https://i.imgur.com/6VBx3io.png";
-
-profileBox.innerHTML=`<img src="${dp}"><div><b>${name}</b><br>${email}</div>`;
+profileBox.innerHTML=`<img src="${dp}"><div>${user.displayName}<br>${user.email}</div>`;
 profileFull.innerHTML=profileBox.innerHTML;
+
 });
 
 /* Generate */
@@ -271,27 +235,20 @@ if(!amt)return alert("Enter amount");
 
 orderId="ORD"+Date.now();
 
-upiLink=`upi://pay?pa=7463011305@amazonpay&pn=Karan&am=${amt}&cu=INR`;
+let upi=localStorage.getItem("upi")||"7463011305@amazonpay";
 
-paymentLink=location.origin+location.pathname+
-`?amount=${amt}&name=${encodeURIComponent(currentUser?.displayName||"User")}&email=${encodeURIComponent(currentUser?.email||"")}`;
+upiLink=`upi://pay?pa=${upi}&pn=Karan&am=${amt}&cu=INR`;
 
 qrcode.innerHTML="";
-new QRCode(qrcode,{text:upiLink,width:220,height:220});
+new QRCode(qrcode,{text:upiLink,width:200,height:200});
 
 orderText.innerText="Order: "+orderId;
 
-startTimer();
-}
-
-/* Timer */
-function startTimer(){
 time=60;
-clearInterval(timer);
 timer=setInterval(()=>{
 time--;
-timer.innerText="Expires in "+time+" sec";
-if(time<=0) clearInterval(timer);
+timer.innerText="Expires "+time;
+if(time<=0)clearInterval(timer);
 },1000);
 }
 
@@ -300,46 +257,82 @@ window.pay=()=>location.href=upiLink;
 
 /* Copy */
 window.copyLink=function(){
-if(isGuest){
-alert("Login required");
-location="login.html";
-return;
-}
-navigator.clipboard.writeText(paymentLink);
-alert("Link Copied");
+navigator.clipboard.writeText(location.href+"?amount="+amount.value);
+alert("Copied");
 }
 
 /* Verify */
 window.verify=function(){
-if(utr.value.length<6)return alert("Invalid UTR");
+if(utr.value.length<6)return alert("Invalid");
+saveHistory();
 alert("Verified");
 }
 
-/* Receipt */
-window.receipt=function(){
+/* History */
+function saveHistory(){
+let h=JSON.parse(localStorage.getItem("h")||"[]");
+h.push({amt:amount.value,utr:utr.value,date:new Date().toLocaleString()});
+localStorage.setItem("h",JSON.stringify(h));
+loadHistory();
+}
+function loadHistory(){
+let h=JSON.parse(localStorage.getItem("h")||"[]");
+historyList.innerHTML="";
+h.forEach(i=>{
+let d=document.createElement("div");
+d.innerText=i.amt+" | "+i.utr;
+historyList.appendChild(d);
+});
+}
+loadHistory();
+
+/* PDF */
+window.downloadPDF=function(){
 let {jsPDF}=window.jspdf;
 let doc=new jsPDF();
 
 doc.text("Karan Payment Gateway",20,20);
-doc.text("Receipt",20,30);
+doc.text("Amount: ₹"+amount.value,20,40);
+doc.text("UTR: "+utr.value,20,50);
+doc.text("Date: "+new Date().toLocaleString(),20,60);
 
-doc.text("Name: "+(currentUser?.displayName||"User"),20,45);
-doc.text("Email: "+(currentUser?.email||""),20,55);
-doc.text("Amount: ₹"+amount.value,20,65);
-doc.text("UTR: "+utr.value,20,75);
-
-let canvas=document.querySelector("#qrcode canvas");
-if(canvas) doc.addImage(canvas.toDataURL(),"PNG",130,40,60,60);
+let c=document.querySelector("#qrcode canvas");
+if(c)doc.addImage(c.toDataURL(),"PNG",120,30,60,60);
 
 doc.save("receipt.pdf");
 }
 
-/* Sections */
-window.show=function(id){
-if(isGuest && id!=="payment"){
-location="login.html";
-return;
+/* WhatsApp */
+window.shareWA=function(){
+let num=prompt("Enter number with country code");
+if(!num)return;
+window.open("https://wa.me/"+num+"?text=Payment Done ₹"+amount.value);
 }
+
+/* UPI */
+window.saveUPI=function(){
+localStorage.setItem("upi",upiInput.value);
+alert("UPI Saved");
+}
+
+/* Profile Upload */
+window.saveProfile=function(){
+let f=profileUpload.files[0];
+let r=new FileReader();
+r.onload=()=>{localStorage.setItem("dp",r.result);location.reload();}
+r.readAsDataURL(f);
+}
+
+/* Email Change */
+window.changeEmail=async function(){
+let cred=EmailAuthProvider.credential(userObj.email,pass.value);
+await reauthenticateWithCredential(userObj,cred);
+await updateEmail(userObj,newEmail.value);
+alert("Email Updated");
+}
+
+/* Section */
+window.show=function(id){
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
 document.getElementById(id).classList.add("active");
 }
@@ -347,16 +340,10 @@ document.getElementById(id).classList.add("active");
 /* Logout */
 window.logout=()=>signOut(auth).then(()=>location="login.html");
 
-/* Auto */
-window.onload=function(){
-let url=new URL(location.href);
-let amt=url.searchParams.get("amount");
-if(amt){
-amount.value=amt;
-generate();
-}
-}
+/* Login */
+window.goLogin=()=>location="login.html";
 
 </script>
+
 </body>
 </html>
