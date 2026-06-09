@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karan Payment Gateway</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f3f4f6;
+            --surface: rgba(255, 255, 255, 0.85);
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+            --success: #10b981;
+            --danger: #ef4444;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,0.05) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,0.05) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,0.05) 0, transparent 50%);
+        }
+
+        /* Utility Classes */
+        .glass {
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .flex-col { display: flex; flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+
+        /* Loader */
+        #app-loader {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .kp-logo-anim {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 20px;
+            animation: pulse 1.5s infinite alternate;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(37, 99, 235, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 10px 20px;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        .header-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .gateway-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            background: linear-gradient(90deg, #1f2937, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .profile-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid var(--primary);
+        }
+        .bell-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 1.2rem;
+            margin-right: 15px;
+        }
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -8px;
+            background: var(--danger);
+            color: white;
+            font-size: 0.6rem;
+            padding: 2px 5px;
+            border-radius: 10px;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0 15px;
+            padding-bottom: 80px; /* Space for mobile nav */
+        }
+
+        /* Section Cards */
+        .card {
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: var(--transition);
+        }
+
+        /* Amount Input */
+        .amount-group {
+            text-align: center;
+            padding: 30px 10px;
+        }
+        .amount-input-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .amount-input-wrapper span { margin-right: 5px; color: var(--text-muted); }
+        .amount-input-wrapper input {
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            width: 150px;
+            text-align: left;
+            font-family: 'Poppins', sans-serif;
+        }
+        .amount-input-wrapper input::placeholder { color: #d1d5db; }
+
+        /* Accordion / Payment Methods */
+        .method-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            background: white;
+        }
+        .method-header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        .method-header:active { background: #f9fafb; }
+        .method-header i { color: var(--primary); width: 25px; }
+        .badge-soon {
+            font-size: 0.7rem;
+            background: #fef3c7;
+            color: #d97706;
+            padding: 3px 8px;
+            border-radius: 8px;
+            margin-left: 10px;
+        }
+
+        /* UPI Section inside Accordion */
+        .method-content {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+        .method-content.active {
+            max-height: 800px;
+            padding: 15px 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        /* UPI Apps Grid */
+        .upi-apps {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .app-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .app-card:active { transform: scale(0.95); }
+        .app-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            border: 1px solid #f3f4f6;
+        }
+        .app-card span { font-size: 0.7rem; font-weight: 500; text-align: center; }
+
+        /* Specific App Colors */
+        .gpay { color: #1a73e8; }
+        .phonepe { color: #5f259f; }
+        .paytm { color: #002e6e; }
+        .amazon { color: #ff9900; }
+        .bhim { color: #ff7a00; }
+
+        /* QR Section */
+        .qr-section {
+            text-align: center;
+            padding: 20px 0;
+            border-top: 1px dashed #d1d5db;
+        }
+        .qr-preview-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 15px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid #e5e7eb;
+        }
+        .qr-blur {
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" fill="none"><rect width="200" height="200" fill="%23f3f4f6"/><path d="M50 50h100v100H50z" fill="%23e5e7eb"/><path d="M70 70h60v60H70z" fill="%23d1d5db"/></svg>');
+            filter: blur(5px);
+            opacity: 0.6;
+        }
+        .btn-generate {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+        .btn-generate:active { transform: translate(-50%, -50%) scale(0.95); }
+
+        /* Processing Overlay */
+        #processing-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .progress-bar {
+            width: 200px;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        /* Bottom Sheet */
+        .bottom-sheet-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 1001;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .bottom-sheet {
+            position: fixed;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            background: white;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            z-index: 1002;
+            padding: 25px 20px;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .bottom-sheet.open { bottom: 0; }
+        .bottom-sheet-overlay.open { opacity: 1; pointer-events: all; }
+        
+        .bs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .close-bs {
+            background: #f3f4f6;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .timer-badge {
+            background: #fee2e2;
+            color: var(--danger);
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .qr-display-box {
+            background: white;
+            border: 2px solid var(--primary);
+            padding: 20px;
+            border-radius: 16px;
+            display: inline-block;
+            margin: 0 auto;
+            box-shadow: 0 10px 25px rgba(37,99,235,0.15);
+        }
+        
+        .payment-details {
+            margin-top: 20px;
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .detail-row:last-child { margin-bottom: 0; }
+        .detail-label { color: var(--text-muted); }
+        .detail-value { font-weight: 600; color: var(--text-main); text-align: right; word-break: break-all;}
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        .btn:active { transform: scale(0.96); }
+
+        /* Notification Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 320px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1005;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar.open { right: 0; }
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .notif-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        .notif-card {
+            background: white;
+            border-left: 4px solid var(--primary);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            animation: fadeIn 0.3s ease;
+        }
+        .notif-card.error { border-left-color: var(--danger); }
+        .notif-card.success { border-left-color: var(--success); }
+        .notif-time { font-size: 0.65rem; color: var(--text-muted); margin-top: 5px; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1f2937;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            z-index: 2000;
+            transition: transform 0.3s ease;
+            opacity: 0;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+            z-index: 90;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .nav-item.active { color: var(--primary); }
+        .nav-item i { font-size: 1.2rem; margin-bottom: 4px; }
+
+        /* Tab Pages */
+        .tab-page { display: none; animation: fadeIn 0.4s ease; }
+        .tab-page.active { display: block; }
+
+        /* Form Inputs (Profile/Settings) */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 0.8rem; margin-bottom: 5px; color: var(--text-muted); }
+        .form-group input { width: 100%; padding: 10px 15px; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit; }
+        
+        /* History Table */
+        .history-list { margin-top: 15px; }
+        .history-card {
+            background: white;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #f3f4f6;
+        }
+        .h-status { font-size: 0.7rem; padding: 3px 8px; border-radius: 10px; }
+        .h-success { background: #d1fae5; color: #065f46; }
+
+        /* PDF Receipt Template (Hidden) */
+        #receipt-template {
+            position: fixed; top: -9999px; left: 0; width: 600px;
+            background: white; padding: 40px; color: black; font-family: 'Poppins', sans-serif;
+        }
+
+        /* Animations */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0% { transform: scale(0.95); opacity: 0.8; } 100% { transform: scale(1.05); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Desktop Responsiveness */
+        @media (min-width: 768px) {
+            body { display: flex; justify-content: center; align-items: center; background: #e5e7eb; }
+            #app-wrapper {
+                width: 400px; height: 800px; background: var(--bg-color);
+                border-radius: 30px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+                position: relative; overflow: hidden;
+            }
+            .container { padding-bottom: 70px; height: calc(100% - 140px); overflow-y: auto; margin: 0; }
+            .bottom-nav { position: absolute; border-radius: 0 0 30px 30px; }
+            header { border-radius: 30px 30px 0 0; }
+            #processing-overlay, .bottom-sheet-overlay, .sidebar { position: absolute; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-loader">
+    <div class="kp-logo-anim">KP</div>
+    <div class="spinner"></div>
+    <p style="margin-top: 15px; color: var(--text-muted); font-size: 0.9rem;">Initializing Gateway...</p>
+</div>
+
+<div id="app-wrapper" style="width: 100%; height: 100%; position: relative;">
+    
+    <header class="glass">
+        <div class="status-bar">
+            <span id="clock">00:00</span>
+            <div>
+                <i class="fas fa-wifi" style="margin-right: 5px;" id="network-icon"></i>
+                <span id="battery"><i class="fas fa-battery-full"></i> 100%</span>
+            </div>
+        </div>
+        <div class="header-main">
+            <div class="gateway-name" id="display-gateway-name">KARAN PAYMENT</div>
+            <div class="flex items-center">
+                <div class="bell-icon" onclick="toggleSidebar()">
+                    <i class="far fa-bell"></i>
+                    <span class="badge" id="notif-badge">0</span>
+                </div>
+                <img src="https://ui-avatars.com/api/?name=User&background=2563eb&color=fff" class="profile-btn" onclick="switchTab('profile')" id="header-avatar" alt="Profile">
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <div id="tab-payment" class="tab-page active">
+            <div class="glass card amount-group">
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 5px;">Paying</p>
+                <div class="amount-input-wrapper">
+                    <span>₹</span>
+                    <input type="number" id="pay-amount" value="1000" placeholder="0">
+                </div>
+            </div>
+
+            <h3 style="font-size: 0.9rem; margin-bottom: 10px; margin-left: 5px; color: var(--text-muted);">Payment Methods</h3>
+
+            <div class="method-item">
+                <div class="method-header" onclick="showToast('Credit/Debit Cards Coming Soon')">
+                    <div class="flex items-center"><i class="far fa-credit-card"></i> Credit / Debit Cards</div>
+                    <span class="badge-soon">Soon</span>
+                </div>
+            </div>
+
+            <div class="method-item">
+                <div class="method-header" onclick="showToast('Net Banking Coming Soon')">
+                    <div class="flex items-center"><i class="fas fa-university"></i> Net Banking</div>
+                    <span class="badge-soon">Soon</span>
+                </div>
+            </div>
+
+            <div class="method-item">
+                <div class="method-header" onclick="showToast('Wallets Coming Soon')">
+                    <div class="flex items-center"><i class="fas fa-wallet"></i> Wallets</div>
+                    <span class="badge-soon">Soon</span>
+                </div>
+            </div>
+
+            <div class="method-item" style="border: 2px solid var(--primary);">
+                <div class="method-header" onclick="toggleUPI()">
+                    <div class="flex items-center"><i class="fab fa-google-pay" style="color:var(--primary);"></i> UPI Options</div>
+                    <i class="fas fa-chevron-up" id="upi-chevron"></i>
+                </div>
+                <div class="method-content active" id="upi-content">
+                    
+                    <p style="font-size: 0.8rem; margin-bottom: 15px; text-align: center; color: var(--text-muted);">Pay by any UPI App</p>
+                    
+                    <div class="upi-apps">
+                        <div class="app-card" onclick="openUpiApp('gpay')">
+                            <div class="app-icon gpay"><i class="fab fa-google"></i></div>
+                            <span>GPay</span>
+                        </div>
+                        <div class="app-card" onclick="openUpiApp('phonepe')">
+                            <div class="app-icon phonepe">P</div>
+                            <span>PhonePe</span>
+                        </div>
+                        <div class="app-card" onclick="openUpiApp('paytm')">
+                            <div class="app-icon paytm"><i class="fas fa-rupee-sign"></i></div>
+                            <span>Paytm</span>
+                        </div>
+                        <div class="app-card" onclick="openUpiApp('amazon')">
+                            <div class="app-icon amazon"><i class="fab fa-amazon"></i></div>
+                            <span>Amazon</span>
+                        </div>
+                        <div class="app-card" onclick="openUpiApp('bhim')">
+                            <div class="app-icon bhim">B</div>
+                            <span>BHIM</span>
+                        </div>
+                        <div class="app-card" onclick="openUpiApp('other')">
+                            <div class="app-icon"><i class="fas fa-ellipsis-h"></i></div>
+                            <span>Any App</span>
+                        </div>
+                    </div>
+
+                    <div class="qr-section">
+                        <p style="font-size: 0.8rem; margin-bottom: 15px; color: var(--text-muted);">Or Pay by UPI QR</p>
+                        <div class="qr-preview-container">
+                            <div class="qr-blur"></div>
+                            <button class="btn-generate" onclick="startQRGeneration()">SHOW QR</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-history" class="tab-page">
+            <h2 style="margin-bottom: 15px;">Transaction History</h2>
+            <div class="flex justify-between items-center" style="margin-bottom: 15px;">
+                <input type="text" id="search-history" placeholder="Search Order ID..." style="padding: 8px; border-radius: 8px; border: 1px solid #d1d5db; width: 70%;" onkeyup="renderHistory()">
+                <button onclick="clearHistory()" style="background:var(--danger); color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;">Clear</button>
+            </div>
+            <div class="history-list" id="history-container">
+                </div>
+        </div>
+
+        <div id="tab-settings" class="tab-page">
+            <div class="glass card">
+                <h2 style="margin-bottom: 20px;">Gateway Settings</h2>
+                <div class="form-group">
+                    <label>Merchant UPI ID</label>
+                    <input type="text" id="set-upi" value="karan@upi">
+                </div>
+                <div class="form-group">
+                    <label>Gateway Name</label>
+                    <input type="text" id="set-name" value="KARAN PAYMENT GATEWAY">
+                </div>
+                <div class="form-group">
+                    <label>Minimum Amount (₹)</label>
+                    <input type="number" id="set-min" value="1">
+                </div>
+                <div class="form-group">
+                    <label>Maximum Amount (₹)</label>
+                    <input type="number" id="set-max" value="100000">
+                </div>
+                <button class="btn btn-primary" onclick="saveSettings()" style="width: 100%;">Save Settings</button>
+            </div>
+        </div>
+
+        <div id="tab-profile" class="tab-page">
+            <div class="glass card" style="text-align: center;">
+                <img src="https://ui-avatars.com/api/?name=User&background=2563eb&color=fff" id="profile-img" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 15px;">
+                <div class="form-group" style="text-align: left;">
+                    <label>Full Name</label>
+                    <input type="text" id="prof-name" value="Guest User">
+                </div>
+                <div class="form-group" style="text-align: left;">
+                    <label>Email Address</label>
+                    <input type="email" id="prof-email" value="guest@example.com">
+                </div>
+                <div class="form-group" style="text-align: left;">
+                    <label>Mobile Number</label>
+                    <input type="tel" id="prof-mobile" value="9876543210">
+                </div>
+                <button class="btn btn-primary" onclick="saveProfile()" style="width: 100%;">Save Profile</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('payment')" id="nav-payment">
+            <i class="fas fa-home"></i><span>Pay</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('history')" id="nav-history">
+            <i class="fas fa-history"></i><span>History</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('settings')" id="nav-settings">
+            <i class="fas fa-cog"></i><span>Settings</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('profile')" id="nav-profile">
+            <i class="far fa-user"></i><span>Profile</span>
+        </div>
+    </div>
+
+    <div class="sidebar" id="notification-sidebar">
+        <div class="sidebar-header">
+            <h3>Notifications</h3>
+            <div class="flex gap-2">
+                <button onclick="clearNotifications()" style="background:none; border:none; color:var(--primary); cursor:pointer; font-size: 0.8rem; margin-right: 10px;">Clear All</button>
+                <button onclick="toggleSidebar()" class="close-bs"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        <div class="notif-list" id="notif-container">
+            </div>
+    </div>
+
+    <div id="processing-overlay" class="hidden">
+        <div class="spinner"></div>
+        <h3 style="margin-top: 20px;">Generating Secure QR...</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">Please wait</p>
+        <div class="progress-bar">
+            <div class="progress-fill" id="qr-progress"></div>
+        </div>
+    </div>
+
+    <div class="bottom-sheet-overlay" id="bs-overlay" onclick="closeBottomSheet()"></div>
+    <div class="bottom-sheet" id="qr-bottom-sheet">
+        <div class="bs-header">
+            <div class="timer-badge" id="qr-timer"><i class="far fa-clock"></i> 05:00</div>
+            <button class="close-bs" onclick="closeBottomSheet()"><i class="fas fa-times"></i></button>
+        </div>
+
+        <div style="text-align: center;">
+            <div class="qr-display-box" id="actual-qr-code">
+                </div>
+            
+            <h2 style="margin-top: 15px; font-size: 1.8rem;" id="bs-amount">₹0</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem;" id="bs-gateway-name">KARAN PAYMENT GATEWAY</p>
+
+            <div class="payment-details">
+                <div class="detail-row">
+                    <span class="detail-label">Order ID</span>
+                    <span class="detail-value" id="bs-order-id">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Txn ID</span>
+                    <span class="detail-value" id="bs-txn-id">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">UPI ID</span>
+                    <span class="detail-value" id="bs-upi-id">-</span>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-outline" onclick="copyPaymentLink()"><i class="far fa-copy"></i> Copy Link</button>
+                <button class="btn btn-outline" onclick="sharePaymentLink()"><i class="fas fa-share-alt"></i> Share</button>
+            </div>
+            <div class="action-buttons" style="margin-top: 10px;">
+                <button class="btn btn-primary" onclick="downloadReceipt()"><i class="fas fa-file-download"></i> Get Receipt</button>
+                <button class="btn btn-success" onclick="simulatePaymentSuccess()" style="background: var(--success); color: white;"><i class="fas fa-check-circle"></i> Verify Pay</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="receipt-template">
+        <div style="border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 20px; text-align: center;">
+            <h1 style="color: #2563eb; margin-bottom: 5px;" id="pdf-gateway">KARAN PAYMENT GATEWAY</h1>
+            <p style="color: #6b7280; font-size: 14px;">Official Payment Receipt</p>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+            <div>
+                <p style="color: #6b7280; font-size: 12px;">Billed To:</p>
+                <h3 id="pdf-name">Guest User</h3>
+                <p id="pdf-email" style="font-size: 14px;">guest@example.com</p>
+            </div>
+            <div style="text-align: right;">
+                <p style="color: #6b7280; font-size: 12px;">Date & Time:</p>
+                <p id="pdf-datetime" style="font-size: 14px; font-weight: bold;">-</p>
+            </div>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+            <tr style="background: #f3f4f6;">
+                <th style="padding: 10px; text-align: left; border: 1px solid #d1d5db;">Description</th>
+                <th style="padding: 10px; text-align: right; border: 1px solid #d1d5db;">Amount</th>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #d1d5db;">
+                    Payment via UPI<br>
+                    <small style="color: #6b7280;">UPI ID: <span id="pdf-upi"></span></small><br>
+                    <small style="color: #6b7280;">Order ID: <span id="pdf-order"></span></small><br>
+                    <small style="color: #6b7280;">Txn ID: <span id="pdf-txn"></span></small>
+                </td>
+                <td style="padding: 10px; text-align: right; border: 1px solid #d1d5db; font-weight: bold; font-size: 18px;" id="pdf-amount">₹0</td>
+            </tr>
+        </table>
+        <div style="text-align: center; margin-top: 50px; color: #6b7280; font-size: 12px;">
+            <p>This is a computer generated receipt and does not require a signature.</p>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Message</div>
+
+</div>
+
+<script>
+    /* --- State & LocalStorage --- */
+    let settings = JSON.parse(localStorage.getItem('kp_settings')) || { upiId: 'karan@upi', name: 'KARAN PAYMENT GATEWAY', min: 1, max: 100000 };
+    let profile = JSON.parse(localStorage.getItem('kp_profile')) || { name: 'Guest User', email: 'guest@example.com', mobile: '9876543210' };
+    let historyData = JSON.parse(localStorage.getItem('kp_history')) || [];
+    let notifications = JSON.parse(localStorage.getItem('kp_notifications')) || [];
+    
+    let currentQRTimer = null;
+    let qrActive = false;
+    let currentPayment = {};
+
+    /* --- Initialization --- */
+    window.onload = () => {
+        setTimeout(() => {
+            document.getElementById('app-loader').classList.add('hidden');
+            logAction('Login Success', 'User successfully accessed the gateway', 'success');
+        }, 3000);
+
+        // Header Clock
+        setInterval(() => {
+            let d = new Date();
+            document.getElementById('clock').innerText = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }, 1000);
+
+        // Battery Status API fallback
+        if (navigator.getBattery) {
+            navigator.getBattery().then(battery => {
+                const updateBattery = () => { document.getElementById('battery').innerHTML = `<i class="fas fa-battery-${battery.level > 0.5 ? 'full' : 'half'}"></i> ${Math.round(battery.level * 100)}%`; };
+                updateBattery();
+                battery.addEventListener('levelchange', updateBattery);
+            });
+        }
+
+        // Network Status
+        window.addEventListener('offline', () => { document.getElementById('network-icon').classList.replace('fa-wifi', 'fa-plane'); showToast('You are offline'); });
+        window.addEventListener('online', () => { document.getElementById('network-icon').classList.replace('fa-plane', 'fa-wifi'); showToast('Back online'); });
+
+        loadDataToUI();
+        updateNotifBadge();
+    };
+
+    function loadDataToUI() {
+        document.getElementById('display-gateway-name').innerText = settings.name;
+        document.getElementById('set-upi').value = settings.upiId;
+        document.getElementById('set-name').value = settings.name;
+        document.getElementById('set-min').value = settings.min;
+        document.getElementById('set-max').value = settings.max;
+        
+        document.getElementById('prof-name').value = profile.name;
+        document.getElementById('prof-email').value = profile.email;
+        document.getElementById('prof-mobile').value = profile.mobile;
+        
+        // Update Avatar Initials
+        document.getElementById('header-avatar').src = `https://ui-avatars.com/api/?name=${profile.name}&background=2563eb&color=fff`;
+        document.getElementById('profile-img').src = `https://ui-avatars.com/api/?name=${profile.name}&background=2563eb&color=fff`;
+    }
+
+    /* --- UI Functions --- */
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.innerText = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-page').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById(`tab-${tabId}`).classList.add('active');
+        document.getElementById(`nav-${tabId}`).classList.add('active');
+        
+        if(tabId === 'history') renderHistory();
+    }
+
+    function toggleUPI() {
+        const content = document.getElementById('upi-content');
+        const chevron = document.getElementById('upi-chevron');
+        if(content.classList.contains('active')) {
+            content.classList.remove('active');
+            chevron.style.transform = 'rotate(180deg)';
+        } else {
+            content.classList.add('active');
+            chevron.style.transform = 'rotate(0deg)';
+        }
+    }
+
+    function toggleSidebar() {
+        const sb = document.getElementById('notification-sidebar');
+        if(sb.classList.contains('open')) {
+            sb.classList.remove('open');
+        } else {
+            renderNotifications();
+            sb.classList.add('open');
+            // Mark read visually
+            document.getElementById('notif-badge').style.display = 'none';
+        }
+    }
+
+    /* --- Notification System --- */
+    function logAction(title, msg, type='info') {
+        notifications.unshift({ id: Date.now(), title, msg, type, time: new Date().toLocaleString() });
+        if(notifications.length > 50) notifications.pop();
+        localStorage.setItem('kp_notifications', JSON.stringify(notifications));
+        updateNotifBadge();
+        if(document.getElementById('notification-sidebar').classList.contains('open')) renderNotifications();
+    }
+
+    function updateNotifBadge() {
+        const badge = document.getElementById('notif-badge');
+        if(notifications.length > 0) {
+            badge.style.display = 'block';
+            badge.innerText = notifications.length > 9 ? '9+' : notifications.length;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    function renderNotifications() {
+        const container = document.getElementById('notif-container');
+        if(notifications.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:gray; font-size:0.8rem; margin-top:20px;">No notifications yet.</p>';
+            return;
+        }
+        container.innerHTML = notifications.map(n => `
+            <div class="notif-card ${n.type}">
+                <div style="font-weight:600; font-size:0.85rem;">${n.title}</div>
+                <div style="font-size:0.75rem; color:#4b5563;">${n.msg}</div>
+                <div class="notif-time">${n.time}</div>
+            </div>
+        `).join('');
+    }
+
+    function clearNotifications() {
+        notifications = [];
+        localStorage.setItem('kp_notifications', JSON.stringify(notifications));
+        renderNotifications();
+        updateNotifBadge();
+        logAction('Settings Updated', 'Notifications cleared');
+    }
+
+    /* --- Settings & Profile --- */
+    function saveSettings() {
+        settings.upiId = document.getElementById('set-upi').value || 'karan@upi';
+        settings.name = document.getElementById('set-name').value || 'KARAN PAYMENT GATEWAY';
+        settings.min = Number(document.getElementById('set-min').value) || 1;
+        settings.max = Number(document.getElementById('set-max').value) || 100000;
+        localStorage.setItem('kp_settings', JSON.stringify(settings));
+        loadDataToUI();
+        showToast('Settings Saved successfully');
+        logAction('Settings Updated', 'Gateway settings were updated', 'success');
+    }
+
+    function saveProfile() {
+        profile.name = document.getElementById('prof-name').value || 'Guest User';
+        profile.email = document.getElementById('prof-email').value || 'guest@example.com';
+        profile.mobile = document.getElementById('prof-mobile').value || '9876543210';
+        localStorage.setItem('kp_profile', JSON.stringify(profile));
+        loadDataToUI();
+        showToast('Profile Saved successfully');
+        logAction('Profile Updated', 'User profile information updated', 'success');
+    }
+
+    /* --- Core Payment Logic --- */
+    function validateAmount() {
+        const amt = Number(document.getElementById('pay-amount').value);
+        if(!amt || amt < settings.min) { showToast(`Minimum amount is ₹${settings.min}`); return false; }
+        if(amt > settings.max) { showToast(`Maximum amount is ₹${settings.max}`); return false; }
+        return amt;
+    }
+
+    function generateIds() {
+        const rand = () => Math.floor(Math.random() * 900000) + 100000;
+        return {
+            orderId: 'ORD' + Date.now().toString().slice(-6) + rand(),
+            txnId: 'TXN' + Date.now().toString() + rand()
+        };
+    }
+
+    function openUpiApp(app) {
+        const amt = validateAmount();
+        if(!amt) return;
+        
+        const ids = generateIds();
+        const upiLink = `upi://pay?pa=${settings.upiId}&pn=${encodeURIComponent(settings.name)}&am=${amt}&tr=${ids.txnId}&cu=INR`;
+        
+        logAction('UPI Opened', `Redirected to ${app.toUpperCase()} for ₹${amt}`, 'info');
+        
+        // Save pending to history
+        saveHistory({ amount: amt, orderId: ids.orderId, txnId: ids.txnId, status: 'Pending', date: new Date().toLocaleString() });
+        
+        // Simulate Deep Link
+        window.location.href = upiLink;
+    }
+
+    /* --- QR Code Flow --- */
+    function startQRGeneration() {
+        const amt = validateAmount();
+        if(!amt) return;
+
+        const overlay = document.getElementById('processing-overlay');
+        const progFill = document.getElementById('qr-progress');
+        overlay.classList.remove('hidden');
+        
+        let width = 0;
+        const delay = Math.floor(Math.random() * 6000) + 1000; // 1 to 7 seconds
+        const intervalTime = delay / 100;
+        
+        const progInterval = setInterval(() => {
+            width++;
+            progFill.style.width = width + '%';
+            if(width >= 100) {
+                clearInterval(progInterval);
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    progFill.style.width = '0%';
+                    showQRBottomSheet(amt);
+                }, 200);
+            }
+        }, intervalTime);
+    }
+
+    function showQRBottomSheet(amt) {
+        const ids = generateIds();
+        const upiLink = `upi://pay?pa=${settings.upiId}&pn=${encodeURIComponent(settings.name)}&am=${amt}&tr=${ids.txnId}&cu=INR`;
+        
+        currentPayment = { amount: amt, ...ids, date: new Date().toLocaleString(), link: upiLink };
+        
+        // Render Text
+        document.getElementById('bs-amount').innerText = `₹${amt}`;
+        document.getElementById('bs-gateway-name').innerText = settings.name;
+        document.getElementById('bs-order-id').innerText = ids.orderId;
+        document.getElementById('bs-txn-id').innerText = ids.txnId;
+        document.getElementById('bs-upi-id').innerText = settings.upiId;
+
+        // Render QR
+        document.getElementById('actual-qr-code').innerHTML = '';
+        new QRCode(document.getElementById('actual-qr-code'), {
+            text: upiLink,
+            width: 180,
+            height: 180,
+            colorDark : "#2563eb",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+
+        // Open Sheet
+        document.getElementById('bs-overlay').classList.add('open');
+        document.getElementById('qr-bottom-sheet').classList.add('open');
+        qrActive = true;
+        
+        logAction('QR Generated', `Generated QR for ₹${amt}. Order ID: ${ids.orderId}`);
+        startTimer();
+    }
+
+    function closeBottomSheet() {
+        document.getElementById('bs-overlay').classList.remove('open');
+        document.getElementById('qr-bottom-sheet').classList.remove('open');
+        qrActive = false;
+        clearInterval(currentQRTimer);
+    }
+
+    function startTimer() {
+        clearInterval(currentQRTimer);
+        let time = 300; // 5 mins
+        const timerEl = document.getElementById('qr-timer');
+        timerEl.innerHTML = `<i class="far fa-clock"></i> 05:00`;
+        timerEl.style.background = '#fee2e2';
+        timerEl.style.color = 'var(--danger)';
+
+        currentQRTimer = setInterval(() => {
+            if(!qrActive) return clearInterval(currentQRTimer);
+            time--;
+            let m = Math.floor(time / 60);
+            let s = time % 60;
+            timerEl.innerHTML = `<i class="far fa-clock"></i> 0${m}:${s < 10 ? '0'+s : s}`;
+            
+            if(time <= 0) {
+                clearInterval(currentQRTimer);
+                timerEl.innerHTML = `EXPIRED`;
+                timerEl.style.background = '#d1d5db';
+                timerEl.style.color = '#4b5563';
+                document.getElementById('actual-qr-code').style.opacity = '0.2';
+                logAction('QR Expired', `QR Code for Order ${currentPayment.orderId} expired.`, 'error');
+                showToast('QR Code Expired. Generate again.');
+            }
+        }, 1000);
+    }
+
+    function copyPaymentLink() {
+        navigator.clipboard.writeText(currentPayment.link).then(() => {
+            showToast('Payment Link Copied!');
+            logAction('Payment Link Copied', `Copied link for Order ${currentPayment.orderId}`);
+        });
+    }
+
+    function sharePaymentLink() {
+        if(navigator.share) {
+            navigator.share({
+                title: 'Payment Request',
+                text: `Please pay ₹${currentPayment.amount} via this secure link.`,
+                url: currentPayment.link
+            }).then(() => logAction('Payment Link Shared', 'User shared the payment link.'));
+        } else {
+            copyPaymentLink();
+            showToast('Sharing not supported. Link copied instead.');
+        }
+    }
+
+    function simulatePaymentSuccess() {
+        saveHistory({ 
+            amount: currentPayment.amount, 
+            orderId: currentPayment.orderId, 
+            txnId: currentPayment.txnId, 
+            status: 'Success', 
+            date: currentPayment.date 
+        });
+        logAction('Payment Verified', `Received ₹${currentPayment.amount} successfully!`, 'success');
+        showToast('Payment Verified Successfully!');
+        closeBottomSheet();
+        setTimeout(() => switchTab('history'), 500);
+    }
+
+    /* --- History System --- */
+    function saveHistory(obj) {
+        historyData.unshift(obj);
+        if(historyData.length > 100) historyData.pop();
+        localStorage.setItem('kp_history', JSON.stringify(historyData));
+    }
+
+    function renderHistory() {
+        const container = document.getElementById('history-container');
+        const query = document.getElementById('search-history') ? document.getElementById('search-history').value.toLowerCase() : '';
+        
+        if(historyData.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:gray; font-size:0.9rem; margin-top:20px;">No transactions yet.</p>';
+            return;
+        }
+
+        const filtered = historyData.filter(h => h.orderId.toLowerCase().includes(query) || h.txnId.toLowerCase().includes(query));
+        
+        container.innerHTML = filtered.map(h => `
+            <div class="history-card">
+                <div>
+                    <div style="font-weight:600;">₹${h.amount}</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted); margin-top:3px;">${h.date}</div>
+                    <div style="font-size:0.65rem; color:#9ca3af; margin-top:2px;">Ord: ${h.orderId}</div>
+                </div>
+                <div class="flex-col items-center">
+                    <span class="h-status ${h.status === 'Success' ? 'h-success' : ''}" style="background:${h.status==='Pending'?'#fef3c7':''}; color:${h.status==='Pending'?'#d97706':''}">${h.status}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function clearHistory() {
+        if(confirm('Are you sure you want to clear transaction history?')) {
+            historyData = [];
+            localStorage.setItem('kp_history', JSON.stringify(historyData));
+            renderHistory();
+            logAction('Settings Updated', 'Transaction history cleared');
+        }
+    }
+
+    /* --- Receipt Generation --- */
+    function downloadReceipt() {
+        logAction('Receipt Downloaded', `Downloaded PDF for Order ${currentPayment.orderId}`);
+        
+        // Populate Hidden Template
+        document.getElementById('pdf-gateway').innerText = settings.name;
+        document.getElementById('pdf-name').innerText = profile.name;
+        document.getElementById('pdf-email').innerText = profile.email;
+        document.getElementById('pdf-datetime').innerText = currentPayment.date;
+        document.getElementById('pdf-upi').innerText = settings.upiId;
+        document.getElementById('pdf-order').innerText = currentPayment.orderId;
+        document.getElementById('pdf-txn').innerText = currentPayment.txnId;
+        document.getElementById('pdf-amount').innerText = `₹${currentPayment.amount}`;
+
+        const element = document.getElementById('receipt-template');
+        element.style.top = '0';
+        element.style.left = '0';
+        element.style.position = 'absolute';
+        element.style.zIndex = '-10'; // Keep it hidden but in flow for html2pdf
+
+        const opt = {
+            margin:       0.5,
+            filename:     `Receipt_${currentPayment.orderId}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(element).save().then(() => {
+            element.style.top = '-9999px';
+            showToast('Receipt Downloaded');
+        });
+    }
+
+</script>
+</body>
+</html>
